@@ -3,6 +3,7 @@ title: Neovim
 layout: post
 tags: [learn, practice, programming, linux]
 date: 25 July 2023
+comments: true
 ---
 
 # About
