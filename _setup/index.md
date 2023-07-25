@@ -12,3 +12,6 @@ experience with neovim and how to jump between terminal sessions with tmux.
 
 - [My neovim setup](/setup/neovim)
 - [My tmux config](/setup/tmux)
+
+This section assumes you are using a linux distro. Personally, I am using
+Ubuntu 🗿.

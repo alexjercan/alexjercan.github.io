@@ -8,9 +8,6 @@ comments: true
 
 # About
 
-This section assumes you are using a linux distro. Personally, I am using
-Ubuntu 🗿.
-
 Here you will learn how to configure neovim, a powerful and extensible text
 editor. We will explore various plugins, keybindings, and configurations that
 will smoothen your developer experience.
@@ -22,6 +19,8 @@ will smoothen your developer experience.
 - [GitHub Repo](https://github.com/alexjercan/nvim.dotfiles)
 
 # Install
+
+### Neovim
 
 The first thing you will need to do is install neovim. You can follow the steps
 from the official
@@ -65,7 +64,7 @@ _unstable_ ppa.
 This is enough for you to get started working on editing some text. But you can
 go down the rabbit hole of configuring your neovim experience first.
 
-# Dependencies
+### Dependencies
 
 To customize the neovim experience you will need some external tools first.
 
@@ -101,7 +100,7 @@ You will just need to download the source code and run the install script. For e
 ```console
 git clone git@github.com:alexjercan/nvim.dotfiles.git
 cd nvim.dotfiles
-./install.sh
+./install
 ```
 
 > **_NOTE:_** This will remove the configuration from `~/.config/nvim/` and create a symlink
