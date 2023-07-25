@@ -1,0 +1,27 @@
+---
+layout: default
+---
+
+<div class="post">
+	{% assign taggedPosts = "" | split: "" %}
+	{% for collection in site.collections %}
+		{% for item in site[collection.label] %}
+			{% if item.tags contains page.tag %}
+				{% assign taggedPosts = taggedPosts | push: item %}
+			{% endif %}
+		{% endfor %}
+	{% endfor %}
+
+	{% assign taggedPosts = taggedPosts | sort: 'date' %}
+	{% assign taggedPosts = taggedPosts | reverse %}
+
+	<ul>
+	{% for item in taggedPosts %}
+
+		<li>
+			<a href="{{ item.url }}">{{ item.title }}</a> <date style="font-size: 13px; color: #666;">({{item.date | date_to_string}})</date><br>
+		</li>
+	{% endfor %}
+	</ul>
+</div>
+<hr>

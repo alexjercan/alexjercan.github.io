@@ -1,0 +1,24 @@
+---
+layout: default
+---
+
+<section id="title" style="margin-bottom: 0px;">
+    <h1 style="font-size: 30px; margin-bottom: 0px;">{{ page.title }}</h1>
+    {% if page.date %}
+      <date style="font-size: 13px; color: #666;">Posted on {{page.date | date: "%-d %B %Y" }}.</date>
+    {% endif %}
+    <!-- <p class="view">by {{ page.author | default: site.author }}</p> -->
+</section>
+
+{% if page.tags %}
+  <section id="tags">
+    <span>
+    {% for tag in page.tags %}
+      {% capture tag_name %}{{ tag }}{% endcapture %}
+      <a href="/tags/{{ tag_name }}"><nobr>{{ tag_name }}</nobr></a>
+    {% endfor %}
+    </span>
+  </section>
+{% endif %}
+
+{{content}}
