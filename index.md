@@ -22,6 +22,12 @@ experience. I will keep the posts updated with my latest changes.
 
 - [My Setup](/setup)
 
+# Tutorials 🎓
+
+In this section you will find tutorials for simpler projects.
+
+- [Tutorials](/tutorials)
+
 # CTF Writeups 👨‍💻
 
 In this section you will find my solutions for CTF challenges.
