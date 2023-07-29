@@ -71,4 +71,4 @@ element from the javascript side. I think it is also a good learning experience
 to try to build web stuff from scratch and not use large frameworks.
 
 - [Demo Game](https://alexjercan.github.io/labyrinth-escape/)
-- [GitHub Repository](https://github.com/alexjercan/labyrinth-escape)
+- [GitHub Repo](https://github.com/alexjercan/labyrinth-escape)

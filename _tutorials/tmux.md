@@ -16,8 +16,6 @@ to improve my productivity.
   <img src="/images/tmux/tmux.png" width="1000"/>
 </p>
 
-- [GitHub Repo](https://github.com/alexjercan/tmux.dotfiles)
-
 In my opinion, you do not notice that much of a difference from just a
 screenshot. Maybe you will see that there is a cool status bar, for which I use
 a custom plugin instead of the default one. However the power of tmux comes
@@ -198,4 +196,8 @@ Lastly you will need to add the tpm run line if you want to use plugins
 run '~/.tmux/plugins/tpm/tpm'
 ```
 
+# Conclusion
+
 Feel free to use my config file from the repo and change what you like.
+
+- [GitHub Repo](https://github.com/alexjercan/tmux.dotfiles)

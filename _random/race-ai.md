@@ -146,4 +146,4 @@ a game, and not just stuff I had to do for uni homeworks. It has also helped me
 learn more javascript and HTML.
 
 - [Demo Game](https://alexjercan.github.io/race-ai/)
-- [GitHub Repository](https://github.com/alexjercan/race-ai)
+- [GitHub Repo](https://github.com/alexjercan/race-ai)

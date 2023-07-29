@@ -201,4 +201,4 @@ This project teaches how to use the `openai` library in it's basic form, and
 how to think of a chatbot API endpoint. By saving the history of the messages
 and keeping track of the responses.
 
-- [GitHub Repository](https://github.com/alexjercan/chatgpt-cli)
+- [GitHub Repo](https://github.com/alexjercan/chatgpt-cli)

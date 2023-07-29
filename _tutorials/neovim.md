@@ -16,8 +16,6 @@ will smoothen your developer experience.
   <img src="/images/neovim/lsp.png" width="1000"/>
 </p>
 
-- [GitHub Repo](https://github.com/alexjercan/nvim.dotfiles)
-
 # Install
 
 ### Neovim
@@ -297,3 +295,9 @@ lsp for any language. There are some downsides to this method, because you
 might not always find the latest versions. But it is a lot easier than having
 to manually install them (unless the programming language has a really good
 build tool/package manager).
+
+# Conclusion
+
+Feel free to use the github repo and make changes to it as you wish.
+
+- [GitHub Repo](https://github.com/alexjercan/nvim.dotfiles)

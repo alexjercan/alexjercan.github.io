@@ -57,7 +57,5 @@ collections:
     output: true
   random:
     output: true
-  setup:
-    output: true
   tutorials:
     output: true
