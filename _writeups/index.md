@@ -12,3 +12,4 @@ challenges.
 ### TryHackMe
 
 - [Cat Pictures 2](/writeups/catpictures2)
+- [Forgotten Implant](/writeups/forgottenimplant)
