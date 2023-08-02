@@ -29,3 +29,4 @@ experience. I will keep the posts updated with my latest changes.
 Some of my small project for playing around with ChatGPT.
 
 - [CLI Chat with Python](/tutorials/cli_chat_python)
+- [ChatGPT WebApp](/tutorials/webapp_chat)
