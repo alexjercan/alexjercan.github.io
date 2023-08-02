@@ -15,6 +15,19 @@ with the password would be hard to find).
 
 # Walkthrough
 
+<div class="video-container" align="center">
+	<iframe
+        title="YouTube video player"
+        width="840"
+        height="478"
+        src="https://www.youtube.com/embed/SfV5I3Sj6rA"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen
+    >
+    </iframe>
+</div>
+
 I usually like to start by doing an `export IP=...` so that I don't have to
 remember the IP of the target all the time.
 
