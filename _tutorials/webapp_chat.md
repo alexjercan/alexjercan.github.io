@@ -343,13 +343,17 @@ Then you will have to define the on click handler
 function handleChatSystemSubmit() {
     const system = document.getElementById("chat-system").value;
     history = [{role: "system", content: system}];
+
+    document.getElementById("chat-history").innerHTML = "";
 }
 
 document.getElementById("chat-system-submit").addEventListener("click", handleChatSystemSubmit);
 ```
 
 The handler should reset the history and set the first message to the text that
-you get from the input box. It should also set the role to system.
+you get from the input box. It should also set the role to system. And finally
+it should make sure that the content of the chat is cleared to make it clear
+that this is a new conversation.
 
 </details>
 
@@ -419,7 +423,7 @@ For this task I had in mind that you would just remove the buttons and the on
 click binding, and move the call to the handlers in the on click event of the
 last submit button.
 
-1. Remove the first 2 buttons (for example this one)
+1. Remove the first button (for example this one)
 
 ```html
 <button id="openai-key-submit">Submit</button>
