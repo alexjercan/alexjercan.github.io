@@ -33,7 +33,6 @@ will have to use this API key in the web application.
 <div id="wrap">
     <iframe
         id="scaled-frame"
-        scrolling="no"
         title="ChatGPT Demo"
         src="https://alexjercan.github.io/chatgpt-webapp/"
         frameborder="0"
