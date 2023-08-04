@@ -11,3 +11,4 @@ very simple games in JavaScript or Python and CLI tools in C or Rust.
 
 - [Escape the Labyrinth](/random/labyrinth-escape)
 - [Race AI](/random/race-ai)
+- [CodeHint](/random/codehint)
