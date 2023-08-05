@@ -64,14 +64,24 @@ provider.
 ```lua
 require("codehint").setup({
     provider = "llama2",
+    args = {
+        use_eval = false,
+    },
 })
 ```
 
-The `llama2` provider does not take any extra arguments.
+- `use_eval`: will attempt to execute the python code directly from the shell.
 
-Currently, the only way to use llama2 is to setup a wrapper
-server using huggingface's spaces and `gradio_client`. I provide the code for
-it here
+With `use_eval` **true** you will have to install `gradio_client` for Python.
+This is a current limitation of using hf spaces instead of a dedicated server
+for hosting llama2, but it is free.
+
+```console
+pip install gradio_client
+```
+
+With `use_eval` **false**, the way to use llama2 is to setup a wrapper server
+using huggingface's spaces and `gradio_client`. I provide the code for it here
 
 ```python
 from flask import Flask, request
