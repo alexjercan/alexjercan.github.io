@@ -30,3 +30,4 @@ Some of my small project for playing around with ChatGPT.
 
 - [CLI Chat with Python](/tutorials/cli_chat_python)
 - [ChatGPT WebApp](/tutorials/webapp_chat)
+- [Slide Gen](/tutorials/slide-gen)
