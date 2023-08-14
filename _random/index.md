@@ -13,3 +13,4 @@ very simple games in JavaScript or Python and CLI tools in C or Rust.
 - [Race AI](/random/race-ai)
 - [CodeHint](/random/codehint)
 - [Fried YouTube](/random/fried-youtube)
+- [Habit Tracker](/random/habit-tracker)
