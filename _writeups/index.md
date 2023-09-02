@@ -14,3 +14,4 @@ challenges.
 - [Cat Pictures 2](/writeups/catpictures2)
 - [Forgotten Implant](/writeups/forgottenimplant)
 - [Grep](/writeups/greprtp)
+- [Lesson Learned?](/writeups/lessonlearned)
