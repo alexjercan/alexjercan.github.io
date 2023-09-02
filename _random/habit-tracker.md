@@ -13,6 +13,19 @@ more easily. Before this app I was using obsidian/notion. However I felt like
 it was easier to have a table on a piece of paper. So I wanted to implement a
 nicer looking piece of paper in the browser.
 
+<div class="video-container" align="center">
+	<iframe
+        title="YouTube video player"
+        width="840"
+        height="478"
+        src="https://www.youtube.com/embed/Oy5THj0IJ8o"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen
+    >
+    </iframe>
+</div>
+
 # Usage
 
 The application has 2 pages.
@@ -29,6 +42,31 @@ tutorial, so here are some examples I use:
 - `📕 Read`
 - `💪 Gym`
 - `🏃 Cardio`
+
+<style>
+  #wrap {
+    width: 100%;
+    height: 650px;
+    overflow: hidden;
+  }
+  #scaled-frame {
+    width: 1408px;
+    height: 896px;
+    transform: scale(0.70);
+    transform-origin: 0 0;
+  }
+</style>
+
+<div id="wrap">
+    <iframe
+        id="scaled-frame"
+        scrolling="no"
+        title="Habit Tracker"
+        src="https://habit-tracker-tan.vercel.app/"
+        frameborder="0"
+    >
+    </iframe>
+</div>
 
 # Technologies
 
