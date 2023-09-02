@@ -15,3 +15,4 @@ very simple games in JavaScript or Python and CLI tools in C or Rust.
 - [Fried YouTube](/random/fried-youtube)
 - [Slide Gen](/random/slide-gen)
 - [Habit Tracker](/random/habit-tracker)
+- [CodeHint WebApp](/random/codehint-web)
