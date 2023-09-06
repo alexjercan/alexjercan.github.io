@@ -11,6 +11,19 @@ comments: true
 CodeHint is a plugin I implemented for NeoVim. The goal of this plugin is to
 make use of LLM's to suggest hints for the source code file that you provide.
 
+<div class="video-container" align="center">
+	<iframe
+        title="YouTube video player"
+        width="840"
+        height="478"
+        src="https://www.youtube.com/embed/0rjjgwFgHLU"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen
+    >
+    </iframe>
+</div>
+
 <p align="center">
   <img src="/images/codehint/01.png" width="1000"/>
 </p>
