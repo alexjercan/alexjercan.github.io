@@ -18,11 +18,38 @@ it easy for other developers to make API based extensions for other editors.
 The application has 3 pages.
 
 - `/` First the dashboard, which shows you the code editor and the hints.
-- `/account` The account page, where you can logout of the application.
+- `/account` The account page, where you can logout of the application or
+  generate an API key.
 - `/credits` The credits page, where you can buy credits to use the
   application.
 
-Initially you will get 10 free hints.
+Initially you will get 10 free hints. You can buy 100 credits for $1 and each
+time you use the hint generation you use 1 credit.
+
+<style>
+  #wrap {
+    width: 100%;
+    height: 650px;
+    overflow: hidden;
+  }
+  #scaled-frame {
+    width: 1408px;
+    height: 896px;
+    transform: scale(0.70);
+    transform-origin: 0 0;
+  }
+</style>
+
+<div id="wrap">
+    <iframe
+        id="scaled-frame"
+        scrolling="no"
+        title="Habit Tracker"
+        src="https://codehint-app.vercel.app/"
+        frameborder="0"
+    >
+    </iframe>
+</div>
 
 # Technologies
 
@@ -41,3 +68,4 @@ This webapp is a good alternative to the neovim plugin I developed, or if you
 prefer to use the browser.
 
 - [GitHub Repo](https://github.com/alexjercan/codehint-app)
+- [Website](https://codehint-app.vercel.app/)
