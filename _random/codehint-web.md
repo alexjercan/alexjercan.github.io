@@ -13,6 +13,10 @@ The CodeHint Webapp is part of the CodeHint plugin I implemented for NeoVim
 interface for ChatGPT and Llama2 models to suggest hints for code. And to make
 it easy for other developers to make API based extensions for other editors.
 
+<p align="center">
+  <img src="/images/codehint-webapp/01-example.png" width="1000"/>
+</p>
+
 # Usage
 
 The application has 3 pages.
