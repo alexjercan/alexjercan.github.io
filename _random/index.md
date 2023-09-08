@@ -16,3 +16,4 @@ very simple games in JavaScript or Python and CLI tools in C or Rust.
 - [Slide Gen](/random/slide-gen)
 - [Habit Tracker](/random/habit-tracker)
 - [CodeHint WebApp](/random/codehint-web)
+- [Falling Blocks](/random/falling-blocks)
