@@ -21,12 +21,14 @@ experience with neovim and how to jump between terminal sessions with tmux.
 Check out how I have configured my linux setup for a smooth development
 experience. I will keep the posts updated with my latest changes.
 
-- [My neovim setup](/tutorials/neovim)
-- [My tmux config](/tutorials/tmux)
+- [My neovim setup](/tutorials/neovim) - see how I set up my NeoVim
+- [My tmux config](/tutorials/tmux) - see how I set up my Tmux
 
 ### ChatGPT 👾
 
 Some of my small project for playing around with ChatGPT.
 
-- [CLI Chat with Python](/tutorials/cli_chat_python)
-- [ChatGPT WebApp](/tutorials/webapp_chat)
+- [CLI Chat with Python](/tutorials/cli_chat_python) - learn how to make a
+  really simple Python CLI app to talk with ChatGPT
+- [ChatGPT WebApp](/tutorials/webapp_chat) - learn how to make a really simple
+  HTML website to talk with ChatGPT
