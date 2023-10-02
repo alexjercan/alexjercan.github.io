@@ -59,3 +59,5 @@ collections:
     output: true
   tutorials:
     output: true
+  setup:
+    output: true

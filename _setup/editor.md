@@ -1,8 +1,8 @@
 ---
-title: Neovim
+title: My Developer Experience
 layout: post
-tags: [learn, practice, programming, linux]
-date: 25 July 2023
+tags: [learn, linux, neovim, tmux, dotfiles]
+date: 02 October 2023
 comments: true
 ---
 
@@ -10,15 +10,47 @@ comments: true
 
 Here you will learn how to configure neovim, a powerful and extensible text
 editor. We will explore various plugins, keybindings, and configurations that
-will smoothen your developer experience.
+will smoothen your developer experience. Then we will look into how I set up my
+Tmux to achieve maximum efficiency.
 
 <p align="center">
-  <img src="/images/neovim/lsp.png" width="1000"/>
+  <img src="https://raw.githubusercontent.com/alexjercan/nvim.dotfiles/master/.resources/lsp.png" width="1000"/>
 </p>
 
-# Install
+In my opinion, you do not notice that much of a difference from just a
+screenshot. Maybe you will see that there is a cool status bar, for which I use
+a custom plugin instead of the default one. However the power of tmux comes
+when you need to switch between multiple terminals, even multiple sessions.
 
-### Neovim
+# Quickstart
+
+The project is built such that it makes installing the dotfiles and the
+dependencies effortlessly.
+
+First clone the repository containing the configuration files.
+
+```console
+git clone git@github.com:alexjercan/nvim.dotfiles.git
+```
+
+Then run the `install` script.
+
+```console
+cd nvim.dotfiles
+./install
+```
+
+> **_NOTE:_** Running the `install` script will delete your old dotfiles for
+the applications included in this repo. Make a backup if you don't want to lose
+them and always check the `sh` scripts before running them.
+
+> **_NOTE:_** The `install` script is still WIP and is not finished yet. Report
+any bugs you encounter to the
+[issues](https://github.com/alexjercan/nvim.dotfiles/issues) page.
+
+# Neovim
+
+## Install
 
 The first thing you will need to do is install neovim. You can follow the steps
 from the official
@@ -59,6 +91,9 @@ path is included in the PATH variable. You can check that with `echo $PATH`.
 at <https://github.com/neovim/neovim/wiki/Installing-Neovim#ubuntu> and use the
 _unstable_ ppa.
 
+> **_NOTE:_** If you are using Arch you can just `pacman -S neovim` and you
+will get the latest version.
+
 This is enough for you to get started working on editing some text. But you can
 go down the rabbit hole of configuring your neovim experience first.
 
@@ -87,13 +122,14 @@ terminal. It is just that neovim works better when combined with tools that
 allow you to search for files or words, so you don't have to use your mouse to
 navigate and waste time.
 
-# Configuration
+## Configuration
 
 If you just want an out of the box config with some sensible defaults you can
 use my [nvim.dotfiles](https://github.com/alexjercan/nvim.dotfiles/tree/master)
 repo.
 
-You will just need to download the source code and run the install script. For example
+You will just need to download the source code and run the install script. For
+example
 
 ```console
 git clone git@github.com:alexjercan/nvim.dotfiles.git
@@ -101,8 +137,9 @@ cd nvim.dotfiles
 ./install
 ```
 
-> **_NOTE:_** This will remove the configuration from `~/.config/nvim/` and create a symlink
-to my repo, so make sure to backup your old configuration if you want to.
+> **_NOTE:_** This will remove the configuration from `~/.config/nvim/` and
+create a symlink to my repo, so make sure to backup your old configuration
+if you want to.
 
 The configuration is written in the `lua` programming language.
 
@@ -295,6 +332,184 @@ lsp for any language. There are some downsides to this method, because you
 might not always find the latest versions. But it is a lot easier than having
 to manually install them (unless the programming language has a really good
 build tool/package manager).
+
+# Tmux
+
+## Install
+
+The first thing you will need to do is install tmux. You can follow the steps
+from the official
+[documentation](https://github.com/tmux/tmux#installation). Most probably you
+will find tmux available in your package manager (e.g `sudo apt install tmux`).
+
+This is enough to get started using tmux with my config.
+
+```console
+git clone git@github.com:alexjercan/tmux.dotfiles.git
+cd tmux.dotfiles
+./install
+```
+
+However, I have also included a script that can be used to start a new session
+for one of your projects really fast. Enter `tmux-sessionizer`.
+
+### Tmux Sessionizer
+
+This step is optional, but it gives you a great tool for working with tmux.
+
+To be able to use sessionizer you need to install
+[fzf](https://github.com/junegunn/fzf). This is a tool that allows you to
+filter for files from the CLI.
+
+Sessionizer works by first choosing a project folder. In my case I keep the
+projects in `~/personal/` and `~/work/`, so I hardcoded in the bash script
+
+```bash
+selected=$(find ~/personal ~/work -mindepth 1 -maxdepth 1 -type d | fzf)
+```
+
+but you can change the target of the `find` command (you can even use multiple
+folders, and change the depth). The important thing is to use fzf to quickly go
+through projects and filter for the one that you want to open.
+
+If you close the terminal but do not stop your tmux session, the next time you
+use sessionizer it will open your project back up (if you search for it with
+fzf). You can even create a new session from inside an existing session and
+easily switch between the projects. (Altough for switching between sessions I
+would rather use the tmux way of prefix+s, but you would first need to create
+that session somehow, and sessionizer is really good at that)
+
+> **_NOTE:_** My install script creates a symlink for tmux-sessionizer inside
+`~/.local/bin/tmux-sessionizer`, so you might need to add `~/.local/bin/` to
+PATH to make sure you can use it.
+
+### Nerd Font
+
+This step is optional. It is useful if you care about having nice icons in the
+status bar.
+
+You will have to install a [nerd font](https://www.nerdfonts.com/). I think
+that any font works, but I am using `3270 Nerd Font` just for reference.
+
+Again, to install the font, I just downloaded the zip archive and moved the
+font files to `~/.local/share/fonts/`. There are many different ways to do it
+and you can read more about it on the nerd fonts website.
+
+### Tpm
+
+If you want to install plugins you will need
+[tpm](https://github.com/tmux-plugins/tpm). Don't forget to run `tmux source
+~/.tmux.conf` once you are done with the installation. And after that you will
+have to install all the plugins with `prefix+I` (prefix+shift+i basically)
+
+The plugin that I use for the status bar is
+[rose-pine/tmux](https://github.com/rose-pine/tmux) It is the same theme I use
+for my [neovim](/setup/neovim) config.
+
+Another plugin I use is
+[tmux-sensible](https://github.com/tmux-plugins/tmux-sensible), which contains
+some better default settings.
+
+## Config
+
+So that you have more colors (if your terminal allows it)
+
+```conf
+# terminal stuff
+set -ga terminal-overrides ",screen-256color*:Tc"
+set-option -g default-terminal "screen-256color"
+set -s escape-time 0
+```
+
+Change prefix key to Ctrl-Space. I tried different prefix combinations, this
+one stuck with me because it is similar to my neovim leader key (space).
+
+```conf
+unbind C-b
+set -g prefix C-Space
+bind C-Space send-prefix
+```
+
+By default tmux will have its first window set on `0`, but that makes it more
+difficult to switch to it. If it starts at `1`, you will just have to do
+`ctrl+space+1` -> `ctrl+space+2` etc to move between windows.
+
+```conf
+set -g base-index 1
+set -g pane-base-index 1
+set-window-option -g pane-base-index 1
+set-option -g renumber-windows on
+```
+
+Set vi mode, so we can make use of `hjkl` and other good vim stuff.
+
+```conf
+set-window-option -g mode-keys vi
+bind -T copy-mode-vi v send-keys -X begin-selection
+bind -T copy-mode-vi y send-keys -X copy-pipe-and-cancel 'xclip -in -selection clipboard'
+```
+
+If you are into using panes I have also added some config for that. But I think
+that just using windows is easier. This config will allow you to move between
+panes with vim keybindings. The same you would move between vim windows.
+
+```conf
+bind -r ^ last-window
+bind -r k select-pane -U
+bind -r j select-pane -D
+bind -r h select-pane -L
+bind -r l select-pane -R
+```
+
+Again stuff for panes. If you open a pane it will do it in the current
+directory.
+
+```conf
+bind '"' split-window -v -c "#{pane_current_path}"
+bind % split-window -h -c "#{pane_current_path}"
+```
+
+This uses the sessionizer script to start a new session. If you want to open up
+a new project just press `ctrl+space+f` and it will allow you to search in your
+Documents folder.
+
+```conf
+bind-key -r f run-shell "tmux neww ~/.local/bin/tmux-sessionizer"
+```
+
+Useful when you add plugins and stuff.
+
+```conf
+bind r source-file ~/.tmux.conf
+```
+
+When you detach you go to your last open session. If no session exists it will
+exit.
+
+```conf
+set-option -g detach-on-destroy off
+```
+
+Some config for my plugins
+
+```conf
+set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/tmux-sensible'
+set -g @plugin "nordtheme/tmux"
+set -g @plugin "tmux-plugins/tmux-prefix-highlight"
+```
+
+Some config for my theme
+
+```conf
+set-option -g status-left-length "80"
+```
+
+Lastly you will need to add the tpm run line if you want to use plugins
+
+```conf
+run '~/.tmux/plugins/tpm/tpm'
+```
 
 # Conclusion
 
