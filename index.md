@@ -62,7 +62,7 @@ very simple games in JavaScript or Python and CLI tools in C or Rust.
   CodeHint more friendly to use
 - [Falling Blocks](/random/falling-blocks) 🎮 - My first game, made in C# in an
   old Visual Studio
-- [Game Of Like](/random/game-of-life) 🧬 - A simulation for Conway Game of Life
+- [Game Of Life](/random/game-of-life) 🧬 - A simulation for Conway Game of Life
 
 # Dev Setup 💻
 

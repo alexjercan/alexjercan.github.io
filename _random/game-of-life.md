@@ -1,5 +1,5 @@
 ---
-title: CodeHint Webapp
+title: Conway's Game of Life
 layout: post
 tags: [webdev, javascript, html, css, github, rust]
 date: 6 Oct 2023
