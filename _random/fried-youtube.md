@@ -1,7 +1,7 @@
 ---
 title: Fried YouTube
 layout: post
-tags: [learn, practice, programming, bash, ffmpeg]
+tags: [bash, ffmpeg]
 date: 9 Aug 2023
 comments: true
 ---

@@ -1,7 +1,7 @@
 ---
 title: Escape the Labyrinth
 layout: post
-tags: [learn, practice, programming, javascript, game]
+tags: [javascript, html, css, game]
 date: 25 Jul 2023
 comments: true
 ---

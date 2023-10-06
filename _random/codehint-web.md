@@ -1,7 +1,7 @@
 ---
 title: CodeHint Webapp
 layout: post
-tags: [learn, practice, programming, webdev, generative ai, llm]
+tags: [webdev, llm, svelte, javascript, firebase, vercel]
 date: 2 Sep 2023
 comments: true
 ---

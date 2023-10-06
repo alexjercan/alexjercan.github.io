@@ -1,7 +1,7 @@
 ---
 title: Forgotten Implant
 layout: post
-tags: [learn, practice, programming, linux, ctf, tryhackme]
+tags: [linux, ctf, tryhackme]
 date: 1 August 2023
 comments: true
 ---

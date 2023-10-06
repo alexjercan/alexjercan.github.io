@@ -1,7 +1,7 @@
 ---
 title: Race AI
 layout: post
-tags: [learn, practice, programming, javascript, game, reinforcement learning, ai]
+tags: [javascript, python, game, reinforcement learning]
 date: 29 Jul 2023
 comments: true
 ---

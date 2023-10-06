@@ -1,7 +1,7 @@
 ---
 title: CodeHint
 layout: post
-tags: [learn, practice, programming, lua, neovim, generative ai, llm]
+tags: [lua, neovim, llm, python]
 date: 4 Aug 2023
 comments: true
 ---

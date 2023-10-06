@@ -1,7 +1,7 @@
 ---
 title: SlideGen
 layout: post
-tags: [learn, practice, programming, python, generative ai, llm]
+tags: [python, llm, linux]
 date: 9 Aug 2023
 comments: true
 ---

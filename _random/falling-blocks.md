@@ -1,7 +1,7 @@
 ---
 title: Falling Blocks
 layout: post
-tags: [learn, practice, programming, windows, c#]
+tags: [windows, c#, game]
 date: 8 Sep 2023
 comments: true
 ---

@@ -1,7 +1,7 @@
 ---
 title: Cat Pictures 2
 layout: post
-tags: [learn, practice, programming, linux, ctf, tryhackme]
+tags: [linux, ctf, tryhackme]
 date: 27 July 2023
 comments: true
 ---

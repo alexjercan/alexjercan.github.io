@@ -1,7 +1,7 @@
 ---
 title: HabitTracker
 layout: post
-tags: [learn, practice, programming, svelte, javascript, firebase, vercel]
+tags: [svelte, javascript, firebase, vercel]
 date: 14 Aug 2023
 comments: true
 ---

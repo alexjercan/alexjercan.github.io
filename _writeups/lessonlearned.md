@@ -1,7 +1,7 @@
 ---
 title: Lesson Learned?
 layout: post
-tags: [learn, practice, programming, linux, ctf, sqli, tryhackme]
+tags: [linux, ctf, sqli, tryhackme]
 date: 2 Sep 2023
 comments: true
 ---
