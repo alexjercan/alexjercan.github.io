@@ -1,7 +1,7 @@
 ---
 title: Munger
 layout: post
-tags: [security, rust, linux]
+tags: [rust, linux]
 date: 9 Oct 2023
 comments: true
 ---

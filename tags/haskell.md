@@ -1,6 +1,6 @@
 ---
 layout: tagpage
-title: "Tag: security"
-tag: security
+title: "Tag: haskell"
+tag: haskell
 robots: noindex
 ---

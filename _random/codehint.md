@@ -1,7 +1,7 @@
 ---
 title: CodeHint
 layout: post
-tags: [lua, neovim, llm, python]
+tags: [lua, neovim, llm, python, flask]
 date: 4 Aug 2023
 comments: true
 ---

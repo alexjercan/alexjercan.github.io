@@ -1,7 +1,7 @@
 ---
 title: api.h
 layout: post
-tags: [c, linux, api, rest]
+tags: [c, linux]
 date: 9 Oct 2023
 comments: true
 ---

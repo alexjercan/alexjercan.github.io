@@ -1,7 +1,7 @@
 ---
 title: SlideGen
 layout: post
-tags: [python, llm, linux]
+tags: [python, llm, linux, flask, html]
 date: 9 Aug 2023
 comments: true
 ---
