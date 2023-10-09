@@ -64,6 +64,7 @@ very simple games in JavaScript or Python and CLI tools in C or Rust.
   old Visual Studio
 - [Game Of Life](/random/game-of-life) 🧬 - A simulation for Conway Game of Life
 - [Rust TODO TUI](/random/rust-todo-tui) 🗒️ - A TODO application for the terminal
+- [Munger](/random/munger) 🔨 - A CLI tool used to generate passwords from common words
 
 # Dev Setup 💻
 
