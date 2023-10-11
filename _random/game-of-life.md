@@ -1,7 +1,7 @@
 ---
 title: Conway's Game of Life
 layout: post
-tags: [javascript, html, css, github, rust]
+tags: [javascript, html, css, github, rust, wasm]
 date: 6 Oct 2023
 comments: true
 ---
