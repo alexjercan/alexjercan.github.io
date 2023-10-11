@@ -1,7 +1,7 @@
 ---
 title: Reddit Image Downloader
 layout: post
-tags: [c#, parallel, mpsc, windows]
+tags: [cs, parallel, mpsc, windows]
 date: 11 Oct 2023
 comments: true
 ---

@@ -1,7 +1,7 @@
 ---
 title: Falling Blocks
 layout: post
-tags: [windows, c#, game]
+tags: [windows, cs, game]
 date: 8 Sep 2023
 comments: true
 ---
