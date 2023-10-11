@@ -1,7 +1,7 @@
 ---
 title: GPU Heat Simulation
 layout: post
-tags: [c++, GPU, parallel]
+tags: [cpp, GPU, parallel]
 date: 11 Oct 2023
 comments: true
 ---
