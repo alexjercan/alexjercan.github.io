@@ -107,6 +107,16 @@ very simple games in JavaScript or Python and CLI tools in C or Rust.
 - [Rust TODO TUI](/random/rust-todo-tui) 🗒️ - A TODO application for the terminal
 - [Munger](/random/munger) 🔨 - A CLI tool used to generate passwords from common words
 - [Api.h](/random/api.h) 🛟 - Blazingly Fast HTTP API Framework written in C
+- [Slide Twitch](/random/slide-twitch) 📺 - Generate AI videos based on Twitch Chat
+- [DvD Logo Simulator](/random/dvd-logo-simulator) 📀 - Simple GUI program in Haskell
+- [JDSL](/random/jdsl) ⛽ - Meme markup language that uses SVN checkouts
+- [Walker AI](/random/walker-ai) 🤖 - AI Learns to Walk
+- [Crafter](/random/crafter) 🪚 - AI Learns to Play <del>Mine</del>Craft<em>er</em>
+- [Data Structures in C](/random/data-structures-c) 👓 - Basic Data Structures in C
+- [YT Comment to Image](/random/yt-comment-to-image) 🖼️ - Create Screenshots of the YT comments
+- [RIM](/random/reddit-image-downloader) 📝 - Multithreaded CLI tool to download images from subreddits
+- [Haskell RSA](/random/haskell-rsa) 🔒 - RSA Algorithm implemented in Haskell
+- [GPU Heat Simulation](/random/gpgpu-heat_transfer) 🔥 - Simulation of Heat Transfer using GPU Computations
 
 # Dev Setup 💻
 
