@@ -155,3 +155,11 @@ challenges.
 - [Grep](/writeups/greprtp)
 - [Lesson Learned?](/writeups/lessonlearned)
 
+# Advent of Code 🎄
+
+[Advent of Code](https://adventofcode.com/) is an online programming
+competition for solving coding problems. This takes place from 1st of December
+until 25th of December each year.
+
+- [AoC 2021](/random/aoc2021)
+- [AoC 2022](/random/aoc2022)
