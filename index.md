@@ -163,3 +163,4 @@ until 25th of December each year.
 
 - [AoC 2021](/random/aoc2021)
 - [AoC 2022](/random/aoc2022)
+- [AoC 2023](/random/aoc2023)
