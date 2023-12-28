@@ -1,0 +1,176 @@
+<style>
+.containerSanta {
+    height: 46.87em;
+    width: 37.5em;
+    transform: translate(33%, 0%);
+    left: 50%;
+    top: 50%;
+}
+.santa {
+    background-color: #edbb93;
+    height: 6.25em;
+    width: 18.75em;
+    position: absolute;
+    transform: translateX(-50%);
+    left: 50%;
+    top: 17.5em;
+}
+.earsSanta {
+    position: absolute;
+    height: 4.37em;
+    width: 23.75em;
+    background-color: #e59076;
+    transform: translateX(-50%);
+    left: 50%;
+    top: 18.75em;
+    border-radius: 3.12em;
+}
+.santa::before {
+    content: "";
+    position: absolute;
+    height: 1.56em;
+    width: 1.56em;
+    background-color: #0c2137;
+    border-radius: 50%;
+    top: 2.5em;
+    left: 5em;
+    box-shadow: 6.25em 0 #0c2137;
+}
+.moustacheSanta {
+    position: absolute;
+    height: 4.37em;
+    width: 11.25em;
+    background-color: #e3e1ed;
+    left: -2.81em;
+    top: 5em;
+    border-radius: 3.12em 0;
+}
+.moustacheSanta:before {
+    position: absolute;
+    content: "";
+    height: 4.37em;
+    width: 11.25em;
+    background-color: #e3e1ed;
+    left: 11.25em;
+    border-radius: 0 3.12em;
+}
+.beardSanta {
+    background-color: #bfc2e0;
+    height: 15.62em;
+    width: 6.25em;
+    border-radius: 6.87em;
+    position: absolute;
+    top: 21.25em;
+    left: 25em;
+    box-shadow: -18.75em 0 #bfc2e0;
+}
+.beardSanta:before {
+    position: absolute;
+    content: "";
+    background-color: #d4d2e8;
+    height: 17.5em;
+    width: 6.87em;
+    border-radius: 6.87em;
+    top: 1.87em;
+    right: 5em;
+    box-shadow: -8.75em 0 #d4d2e8;
+}
+.beardSanta:after {
+    content: "";
+    background-color: #e3e1ed;
+    height: 20.62em;
+    width: 6.25em;
+    border-radius: 6.87em;
+    position: absolute;
+    top: 3.12em;
+    right: 9.68em;
+}
+.mouthSanta {
+    height: 5.62em;
+    width: 4.37em;
+    background: linear-gradient(#ffffff 1.87em, #0c2137 1.87em);
+    position: absolute;
+    top: 23.75em;
+    left: 16.25em;
+    border-radius: 0 0 4.37em 4.37em;
+    overflow: hidden;
+}
+.mouthSanta:before {
+    content: "";
+    position: absolute;
+    background-color: #ea385f;
+    height: 2.81em;
+    width: 3.43em;
+    top: 3.43em;
+    left: -0.62em;
+    border-radius: 0.62em;
+}
+.hairSanta {
+    height: 5em;
+    width: 23.12em;
+    background-color: #c3c1df;
+    position: absolute;
+    transform: translateX(-50%);
+    left: 50%;
+    top: 15em;
+    border-radius: 5em;
+}
+.hairSanta:before {
+    position: absolute;
+    content: "";
+    width: 25.62em;
+    background-color: #d2d3e6;
+    height: 6.25em;
+    left: -1.25em;
+    bottom: 2.5em;
+    border-radius: 1.25em;
+}
+.hairSanta:after {
+    position: absolute;
+    content: "";
+    height: 10em;
+    width: 23.75em;
+    background-color: #ea385f;
+    bottom: 8.75em;
+    border-radius: 16.25em 0 0 0;
+}
+.hatSanta {
+    position: absolute;
+    background-color: #c82a50;
+    height: 6.25em;
+    width: 3.12em;
+    left: 30.81em;
+    top: 1.25em;
+    border-radius: 0 2.5em 0 0;
+}
+.hatSanta:before {
+    position: absolute;
+    content: "";
+    background-color: #e1e0ec;
+    height: 11.25em;
+    width: 11.25em;
+    top: 4.37em;
+    left: -2.87em;
+    border-radius: 50%;
+}
+@media screen and (max-width:800px) {
+    .containerSanta {
+        font-size: 0.75em;
+    }
+}
+</style>
+
+<div class="containerSanta">
+    <div class="earsSanta"></div>
+    <div class="beardSanta"></div>
+    <div class="mouthSanta"></div>
+    <div class="hatSanta"></div>
+    <div class="hairSanta"></div>
+    <div class="santa">
+        <div class="moustacheSanta"></div>
+    </div>
+</div>
+
+<p style="text-align:center">
+    Credits to <a href="https://codepen.io/lirikklimov/pen/NWBNPog">lirikklimov</a> for html.
+</p>
