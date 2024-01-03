@@ -13,11 +13,10 @@ layout: default
 - I love learning new technologies and staying up to date
 - I build random demo projects and CLI tools
 
-## My goals 2023 🎯
+## My goals 2024 🎯
 
-- <del> Learn WASM in Rust 🦀 </del>
-- <del> PR bench press 100Kg 💪 </del>
-- get better at making content and presenting my projects 👨‍💻
+- Create a Game in Bevy 🦀
+- Bench press 100Kg for 8 reps (2) 💪
 
 <br />
 
