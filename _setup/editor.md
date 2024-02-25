@@ -33,7 +33,9 @@ First clone the repository containing the configuration files.
 git clone git@github.com:alexjercan/nvim.dotfiles.git
 ```
 
-Then run the `install` script.
+Then run the `install` script. The install script will take care of all the
+dependencies and it will allow you to customize your dev experience during the
+process.
 
 ```console
 cd nvim.dotfiles
@@ -47,6 +49,36 @@ them and always check the `sh` scripts before running them.
 > **_NOTE:_** The `install` script is still WIP and is not finished yet. Report
 any bugs you encounter to the
 [issues](https://github.com/alexjercan/nvim.dotfiles/issues) page.
+
+## Install steps
+
+First, the install script will run some cheks to verify that neovim is
+installed and it is a newer version (minimum is 0.9.0). Then based on your
+distro it will install the dependencies.
+
+For the neovim setup, it will create a backup for your old config and then
+start the process of creating the new config. First it installs the default
+plugins. Then it will prompt the user to opt for the install of each optional
+plugin. That is all for neovim, next you will be able to just open up `nvim`
+and Lazy will just install the plugins. You will then be able to modify the
+`plugins` folder to customize the plugins based on your current setup.
+
+> **_NOTE:_** If you want to make persistent changes you also need to change
+`plugins.default`. However `plugins` is what neovim will actually use as
+configuration. The `plugins.default` folder is used as a template.
+
+The tmux setup will just link the new `.tmux.conf` instead of the old one and
+then install the plugins.
+
+Dev Scripts. For this step the installer will go trough each script and prompt
+the user for the install.
+- tmux-sessionizer if you want to install this script you will be prompted the
+  paths that you want to search for projects in. For example I use `~/personal`
+  and `~/work`. Thus the input to the prompt should looks like `~/personal
+  ~/work`.
+
+Post install will just display some information and make sure you can see the
+right icons. If you cannot then you might need a patched font.
 
 # Neovim
 
@@ -100,13 +132,11 @@ go down the rabbit hole of configuring your neovim experience first.
 ### Dependencies
 
 To customize the neovim experience you will need some external tools first.
+These are installed automatically by the install script, but just to know what
+they are used for
 
-- [packer.nvim](https://github.com/wbthomason/packer.nvim)
 - [ripgrep](https://github.com/BurntSushi/ripgrep)
 - [fdfind](https://github.com/sharkdp/fd)
-
-First one is packer.nvim. This is one of the many package managers for neovim.
-And the one that I use.
 
 Ripgrep is optional, but a good addition if you want to use
 [telescope](https://github.com/nvim-telescope/telescope.nvim). `rg` is a `grep`
@@ -139,23 +169,25 @@ cd nvim.dotfiles
 
 > **_NOTE:_** This will remove the configuration from `~/.config/nvim/` and
 create a symlink to my repo, so make sure to backup your old configuration
-if you want to.
+if you want to. The install script will also do a `nvim.bkp` backup, but just
+to be sure.
 
 The configuration is written in the `lua` programming language.
 
 ### Packages
 
-To install the packages you will have to open the `nvim/lua/neovim/packer.lua`
-file with neovim.
+The packages are install automatically on the first time you open up neovim
+using the [Lazy plugin manager](https://github.com/folke/lazy.nvim).
 
-```console
-nvim nvim/lua/neovim/packer.lua
-```
-
-Then you will have to source the file using the command `:so %` inside the
-editor. And then run the command `:PackerSync`. This should install all the
-plugins listed in the packer.lua file.
-
+- [vim-fugitive](https://github.com/tpope/vim-fugitive) Plugin that integrates
+  git into neovim.
+- [lsp-zero.nvim](https://github.com/VonHeikemen/lsp-zero.nvim) Plugin that
+  makes setting up LSP really easy.
+- [nvim-surround](https://github.com/kylechui/nvim-surround) Plugin that is
+  nice to use when you want to surround pieces of text with `(["` etc. with as
+  few keystrokes as possible.
+- [trouble.nvim](https://github.com/folke/trouble.nvim) Plugin that shows all
+  the diagnostics, searches, etc. in a list you can navigate with `hjkl`.
 - [telescope](https://github.com/nvim-telescope/telescope.nvim) Plugin to use
   when you want to search for words or files in your project.
 - [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) Plugin
@@ -163,33 +195,27 @@ plugins listed in the packer.lua file.
 - [nvim-treesitter-context](https://github.com/nvim-treesitter/nvim-treesitter-context)
   Plugin that shows you at the top of the file the scope (function, if, for,
   etc) that you are in.
-- [harpoon](https://github.com/ThePrimeagen/harpoon) Plugin for navigating
-  between a small number of files. Think of it as a `^` on steroids.
 - [undotree](https://github.com/mbbill/undotree) Plugin that is great for when
   you like to Ctrl+z a lot (but in vim you use `u`).
-- [vim-fugitive](https://github.com/tpope/vim-fugitive) Plugin that integrates
-  git into neovim.
-- [nvim-surround](https://github.com/kylechui/nvim-surround) Plugin that is
-  nice to use when you want to surround pieces of text with `(["` etc. with as
-  few keystrokes as possible.
-- [zen-mode.nvim](https://github.com/folke/zen-mode.nvim) Plugin to make neovim
-  look nicer.
-- [trouble.nvim](https://github.com/folke/trouble.nvim) Plugin that shows all
-  the diagnostics, searches, etc. in a list you can navigate with `hjkl`.
-- [lsp-zero.nvim](https://github.com/VonHeikemen/lsp-zero.nvim) Plugin that
-  makes setting up LSP really easy.
-- [rose-pine/neovim](https://github.com/rose-pine/neovim) Color scheme that I
-  use. You can use anything you want here.
-- [github/copilot.vim](https://github.com/github/copilot.vim) Copilot for
-  neovim. Not mandatory to use, since it requires a paid subscription.
-- [codehint](https://github.com/alexjercan/codehint) Plugin that I wrote and
-  uses ChatGPT to give code hints. Not mandatory to use since it requires
-  access to ChatGPT api.
 
 This showcases the plugins that I have installed by default. If you do not want
-to use one of them you can just remove it from the `packer.lua` file. Or if you
+to use one of them you can just remove it the `lua/plugins` folder. Or if you
 want to add a new plugin you can just add it using the convention from the
-packer documentation.
+repo.
+
+- [gruvbox](https://github.com/morhetz/gruvbox) Color scheme that I
+  use. You can use anything you want here.
+- [todo](https://github.com/folke/todo-comments.nvim) Just to make TODO
+  commments more visible
+- [github/copilot.vim](https://github.com/github/copilot.vim) Copilot for
+  neovim. Not mandatory to use, since it requires a paid subscription.
+- [harpoon](https://github.com/ThePrimeagen/harpoon) Plugin for navigating
+  between a small number of files. Think of it as a `^` on steroids.
+- [obsidian](https://github.com/epwalsh/obsidian.nvim) Tool to make easy to
+  take notes using neovim.
+
+These are some optional plugins that I find are nice to have. You can choose
+which to install during the install script.
 
 ### Sets
 
@@ -320,8 +346,8 @@ Again, these keybindings are not really related to any plugins, and you can use
 or change any of them. You can find this file in `nvim/lua/neovim/remap.lua`.
 
 If you want to check some keybindings for specific plugins you can check out
-the `after/plugin` folder and look for which plugin you want to see the
-keybinds for.
+the `lua/plugin` folder and look for which plugin you want to see the keybinds
+for.
 
 ### LSP
 
@@ -341,6 +367,7 @@ The first thing you will need to do is install tmux. You can follow the steps
 from the official
 [documentation](https://github.com/tmux/tmux#installation). Most probably you
 will find tmux available in your package manager (e.g `sudo apt install tmux`).
+Or just use the install script, since it will install tmux by itself.
 
 This is enough to get started using tmux with my config.
 
@@ -359,7 +386,9 @@ This step is optional, but it gives you a great tool for working with tmux.
 
 To be able to use sessionizer you need to install
 [fzf](https://github.com/junegunn/fzf). This is a tool that allows you to
-filter for files from the CLI.
+filter for files from the CLI. This tool is also covered in the install script.
+
+You can use the `--help` flag to see how the script can be used.
 
 Sessionizer works by first choosing a project folder. In my case I keep the
 projects in `~/personal/` and `~/work/`, so I hardcoded in the bash script
@@ -370,7 +399,9 @@ selected=$(find ~/personal ~/work -mindepth 1 -maxdepth 1 -type d | fzf)
 
 but you can change the target of the `find` command (you can even use multiple
 folders, and change the depth). The important thing is to use fzf to quickly go
-through projects and filter for the one that you want to open.
+through projects and filter for the one that you want to open. This step is
+done during the install phase. You will have to provide the paths to the
+folders that you want to search into.
 
 If you close the terminal but do not stop your tmux session, the next time you
 use sessionizer it will open your project back up (if you search for it with
@@ -409,6 +440,8 @@ for my [neovim](/setup/neovim) config.
 Another plugin I use is
 [tmux-sensible](https://github.com/tmux-plugins/tmux-sensible), which contains
 some better default settings.
+
+All the plugins are installed with the install script.
 
 ## Config
 
