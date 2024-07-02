@@ -87,6 +87,9 @@ Random projects where I experiment with different programming languages and
 frameworks to learn new and interesting skills. I will usually try to implement
 very simple games in JavaScript or Python and CLI tools in C or Rust.
 
+- [Autocomplete in C](/random/autocomplete) 🚗 - Autocomplete algorithm in C
+- [Image Filter CUDA](/random/image-filters) 🖼️ - Image Fitlers in C and CUDA
+- [AStar Demo](/random/astar) 💫 - AStar in WASM
 - [Particle Simulation](/random/sph) ⏺ - Particle Simulation Engine in C
 - [Tetris Arduino](/random/tetris-arduino) 🧊 - Tetris on Arduino
 - [Breakout Arduino](/random/breakout-arduino) 🧊 - Breakout on Arduino
