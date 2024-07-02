@@ -87,6 +87,7 @@ Random projects where I experiment with different programming languages and
 frameworks to learn new and interesting skills. I will usually try to implement
 very simple games in JavaScript or Python and CLI tools in C or Rust.
 
+- [RTS Game in Bevy](/random/rts-lethal-empire-bevy) 🎮 - Game I worked on in Rust
 - [Autocomplete in C](/random/autocomplete) 🚗 - Autocomplete algorithm in C
 - [Image Filter CUDA](/random/image-filters) 🖼️ - Image Fitlers in C and CUDA
 - [AStar Demo](/random/astar) 💫 - AStar in WASM
