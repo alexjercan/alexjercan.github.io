@@ -139,14 +139,22 @@ experience with neovim and how to jump between terminal sessions with tmux.
 Check out how I have configured my linux setup for a smooth development
 experience. I will keep the posts updated with my latest changes.
 
-- [My hyprland setup](/setup/hyprland) - see how I set up my Desktop
+- [My NixOS setup](/setup/nixos) - see my new dev setup that uses nixos and i3
+- [My hyprland setup](/setup/hyprland) - see how I set up my Desktop (kind of outdated)
 - [My editor setup](/setup/editor) - see how I set up my Tmux and NeoVim
 
 # Tutorials 🎓
 
 Tutorials for beginner projects. I will cover different topics, like AI and CLI
 tools. This section assumes you are using a linux distro. Personally, I am
-using ~~Ubuntu 🗿~~ Arch 🤓 (BTW).
+using ~~Ubuntu 🗿~~ ~~Arch 🤓 (BTW)~~ NixOS 🧙.
+
+**Full Guides** With YouTube videos to go along.
+
+- [Compiler Tutorial in C](/tutorials/compiler) - learn how to implement a
+  compiler full guide.
+- [Machine Learning From Scratch](/tutorials/machine-learning-scratch) - learn
+  how to implement a neural network from scratch in C.
 
 **ChatGPT 👾** Some of my small project for playing around with ChatGPT.
 
