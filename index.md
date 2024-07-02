@@ -87,6 +87,14 @@ Random projects where I experiment with different programming languages and
 frameworks to learn new and interesting skills. I will usually try to implement
 very simple games in JavaScript or Python and CLI tools in C or Rust.
 
+- [Particle Simulation](/random/sph) ⏺ - Particle Simulation Engine in C
+- [Tetris Arduino](/random/tetris-arduino) 🧊 - Tetris on Arduino
+- [Breakout Arduino](/random/breakout-arduino) 🧊 - Breakout on Arduino
+- [BF Compiler](/random/bf-compiler) 🧻 - Compiler for my own language in C
+- [COOL Compiler](/random/cool) 🧻 - Compiler for my own language in C
+- [ds.h](/random/ds_h) 👾 - Data Structures in C (kind of a standard library for me)
+- [WebApp in Go](/random/webapp-go) 🖥️ - Web App in Go that does retrieval augumented generation (RAG)
+- [nn.h](/random/nn_h) 🤖 - Neural Networks in C
 - [Escape the Labyrinth](/random/labyrinth-escape) 🔑 - Plain JavaScript Game
   where You Need to find the Exit of a Maze
 - [Race AI](/random/race-ai) 🚗 - Plain JavaScript Racing Game that includes an AI
