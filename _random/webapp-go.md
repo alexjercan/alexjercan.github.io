@@ -1,7 +1,7 @@
 ---
 title: TOP G WebApp
 layout: post
-tags: [go, docker, tailwind, css, postgresql, generative ai, javascript]
+tags: [go, docker, tailwind, css, postgres, generative ai, javascript]
 date: 2 Jul 2024
 comments: true
 ---
