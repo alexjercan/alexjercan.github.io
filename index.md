@@ -13,9 +13,9 @@ layout: default
 - I love learning new technologies and staying up to date
 - I build random demo projects and CLI tools
 
-## My goals 2024 🎯
+## My goals 2025 🎯
 
-- Create a Game in Bevy 🦀
+- Write better code 🧑‍💻
 - Bench press 100Kg for 8 reps (3) 💪
 
 <br />
