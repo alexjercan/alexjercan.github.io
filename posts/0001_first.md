@@ -2,7 +2,7 @@
 title: My First Post
 description: This is my first post on this blog.
 template: post
-date: 2025-07-26
+date: Sat, 26 Jul 2025 00:00:00 -0000
 ---
 
 # My First Post
