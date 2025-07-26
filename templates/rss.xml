@@ -4,16 +4,16 @@
         <link>https://alexjercan.github.io/</link>
         <description>Hi there, I'm Alex! Neovim and Linux enjoyer.</description>
         <language>en</language>
+        {% for (unsigned int i = 0; i < posts.count; i++) { %}
+            {% Post *post = NULL; %}
+            {% aids_array_get(&posts, i, (unsigned char **)&post); %}
+            <item>
+                <title>{% write(post->meta.title); %}</title>
+                <link>https://alexjercan.github.io/posts/{% write(post->id); %}.html</link>
+                <description>{% write(post->meta.description); %}</description>
+                <pubDate>{% write(post->meta.date); %}</pubDate>
+                <guid>https://alexjercan.github.io/posts/{% write(post->id); %}.html</guid>
+            </item>
+        {% } %}
     </channel>
-    {% for (unsigned int i = 0; i < posts.count; i++) { %}
-    {% Post *post = NULL; %}
-    {% aids_array_get(&posts, i, (unsigned char **)&post); %}
-        <item>
-            <title>{% write(post->meta.title); %}</title>
-            <link>https://alexjercan.github.io/posts/{% write(post->id); %}.html</link>
-            <description>{% write(post->meta.description); %}</description>
-            <pubDate>{% write(post->meta.date); %}</pubDate>
-            <guid>https://alexjercan.github.io/posts/{% write(post->id); %}.html</guid>
-        </item>
-    {% } %}
 </rss>

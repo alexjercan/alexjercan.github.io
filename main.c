@@ -744,3 +744,5 @@ int main(int argc, char *argv[]) {
 #include "aids.h"
 #define ARGPARSE_IMPLEMENTATION
 #include "argparse.h"
+
+// TODO: Add command to autogenerate a new post with the Metadata template
