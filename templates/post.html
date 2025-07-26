@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>alexjercan</title>
+        <link rel="icon" type="image/png" href="favicon.png" />
+        <link rel="stylesheet" href="reset.css" />
+        <link rel="stylesheet" href="main.css" />
+        <link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="/rss.xml">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+        <meta property="og:title" content="{% write(post.meta.title); %}" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://alexjercan.github.io/{% write(post.id); %}" />
+        <meta property="og:image" content="https://alexjercan.github.io/favicon.png" />
+        <meta property="og:description" content="{% write(post.meta.description); %}" />
+        <meta property="og:locale" content="en_US" />
+        <meta property="og:site_name" content="alexjercan" />
+
+        <meta name="twitter:card" content="summary_large_image">
+    </head>
+    <body>
+        <!-- TODO: we can add some styles in the body before our content -->
+        {% markdown(post.content); %}
+    </body>
+</html>
