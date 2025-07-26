@@ -42,7 +42,7 @@ typedef struct {
     union {
         char *value;
         unsigned int flag;
-        Aids_Array values;
+        Aids_Array /* int */ values;
     };
 } Argparse_Argument;
 
@@ -110,10 +110,10 @@ ARGHDEF Argparse_Result argparse_add_argument(Argparse_Parser *parser, Argparse_
         arg.value = NULL;
         break;
     case ARGUMENT_TYPE_POSITIONAL_REST:
-        aids_array_init(&arg.values, sizeof(char *));
+        aids_array_init(&arg.values, sizeof(int));
         break;
     case ARGUMENT_TYPE_VALUE_ARRAY:
-        aids_array_init(&arg.values, sizeof(char *));
+        aids_array_init(&arg.values, sizeof(int));
         break;
     }
 
@@ -338,7 +338,8 @@ ARGHDEF Argparse_Result argparse_parse(Argparse_Parser *parser, int argc, char *
                     return_defer(ARG_ERR);
                 }
 
-                if (aids_array_append(&arg->values, (const unsigned char *)&argv[++i]) != AIDS_OK) {
+                i++;
+                if (aids_array_append(&arg->values, (const unsigned char *)&i) != AIDS_OK) {
                     argparse__g_failure_reason = "failed to append value to value array";
                     return_defer(ARG_ERR);
                 }
@@ -363,10 +364,11 @@ ARGHDEF Argparse_Result argparse_parse(Argparse_Parser *parser, int argc, char *
                 break;
             }
             case ARGUMENT_TYPE_POSITIONAL_REST: {
-                if (aids_array_append(&arg->values, (const unsigned char *)&name) != AIDS_OK) {
+                if (aids_array_append(&arg->values, (const unsigned char *)&i) != AIDS_OK) {
                     argparse__g_failure_reason = "failed to append value to positional rest array";
                     return_defer(ARG_ERR);
                 }
+
                 break;
             }
             default: {
@@ -432,7 +434,7 @@ ARGHDEF unsigned int argparse_get_flag(Argparse_Parser *parser, char *long_name)
 }
 
 
-ARGHDEF Argparse_Result argparse_get_values(Argparse_Parser *parser, char *name, Aids_Array *values) {
+ARGHDEF Argparse_Result argparse_get_values(Argparse_Parser *parser, char *name, Aids_Array /* int */ *values) {
     Argparse_Result result = ARG_OK;
 
     for (unsigned int i = 0; i < parser->arguments.count; i++) {

@@ -8,6 +8,8 @@
 
 #define COMMAND_GENERATE "generate"
 #define COMMAND_RENDER "render"
+#define COMMAND_GENERATE_RSS "generate-rss"
+#define COMMAND_RENDER_RSS "render-rss"
 
 #define BUILD_DIR "build/"
 #define DIST_DIR "dist/"
@@ -189,8 +191,7 @@ defer:
 static Aids_Result template_insert_post(const Post *post, Aids_String_Builder *template_builder) {
     Aids_Result result = AIDS_OK;
 
-
-    if (aids_string_builder_append(template_builder, "Post post = {0};post.id = aids_string_slice_from_cstr(\"") != AIDS_OK) {
+    if (aids_string_builder_append(template_builder, "post.id = aids_string_slice_from_cstr(\"") != AIDS_OK) {
         aids_log(AIDS_ERROR, "Failed to append post ID to template builder: %s", aids_failure_reason());
         return_defer(AIDS_ERR);
     }
@@ -256,6 +257,8 @@ static Aids_Result template_parse(const char *filename, Aids_String_Slice *ss, A
     while (ss->len > 0) {
         if (aids_string_slice_starts_with(ss, &TEMPLATE_START)) {
             if (html.len > 0) {
+                aids_string_slice_trim(&html);
+
                 if (aids_string_builder_append(template_builder, "write(aids_string_slice_from_cstr(\"") != AIDS_OK) {
                     aids_log(AIDS_ERROR, "Failed to append content to template builder: %s", aids_failure_reason());
                     return_defer(AIDS_ERR);
@@ -352,7 +355,7 @@ static int main_generate(int argc, char *argv[]) {
     argparse_add_argument(
         &parser, (Argparse_Options){.short_name = 'f',
                                     .long_name = "file",
-                                    .description = "Path to the HTML file",
+                                    .description = "Path to the Markdown file",
                                     .type = ARGUMENT_TYPE_POSITIONAL,
                                     .required = true});
 
@@ -395,7 +398,7 @@ static int main_generate(int argc, char *argv[]) {
 
     aids_string_slice_init(&ss, NULL, 0);
     if (aids_io_read(template_path_cstr, &ss, "r") != AIDS_OK) {
-        aids_log(AIDS_ERROR, "Failed to read file: %s: %s", filename, aids_failure_reason());
+        aids_log(AIDS_ERROR, "Failed to read file: %s: %s", template_path_cstr, aids_failure_reason());
         exit(EXIT_FAILURE);
     }
     start_template = ss.str; // Save the start pointer to free later
@@ -428,6 +431,8 @@ static int main_generate(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    aids_log(AIDS_INFO, "Template header file generated successfully: %s", template_h_path_cstr);
+
 defer:
     if (template_h_path_cstr != NULL) {
         AIDS_FREE(template_h_path_cstr);
@@ -454,6 +459,8 @@ static int main_render(int argc, char *argv[]) {
     aids_string_builder_init(&sb);
     Aids_String_Builder html_path_builder = {0};
     char *html_path_cstr = NULL;
+
+    Post post = {0};
 
 #   define write(buffer) aids_string_builder_append(&sb, "%.*s", (int)(buffer).len, (buffer).str)
 #   define markdown(buffer) aids_string_builder_append(&sb, "%.*s", (int)(buffer).len, (buffer).str)
@@ -491,6 +498,218 @@ defer:
     return 0;
 }
 
+static Aids_Result template_insert_posts(const Aids_Array *posts, Aids_String_Builder *template_builder) {
+    Aids_Result result = AIDS_OK;
+
+    for (unsigned int i = 0; i < posts->count; i++) {
+        Post *post = NULL;
+        if (aids_array_get(posts, i, (unsigned char **)&post) != AIDS_OK) {
+            aids_log(AIDS_ERROR, "Failed to get post from array: %s", aids_failure_reason());
+            return_defer(AIDS_ERR);
+        }
+
+        if (aids_string_builder_append(template_builder, "{Post post = {0};") != AIDS_OK) {
+            aids_log(AIDS_ERROR, "Failed to append post ID to template builder: %s", aids_failure_reason());
+            return_defer(AIDS_ERR);
+        }
+
+        if (template_insert_post(post, template_builder) != AIDS_OK) {
+            aids_log(AIDS_ERROR, "Failed to insert post into template builder: %s", aids_failure_reason());
+            return_defer(AIDS_ERR);
+        }
+
+        if (aids_string_builder_append(template_builder, "AIDS_ASSERT(aids_array_append(&posts, (unsigned char *)&post) == AIDS_OK, \"Failed to append post to posts array\");") != AIDS_OK) {
+            aids_log(AIDS_ERROR, "Failed to append post to template builder: %s", aids_failure_reason());
+            return_defer(AIDS_ERR);
+        }
+
+        if (aids_string_builder_append(template_builder, "}") != AIDS_OK) {
+            aids_log(AIDS_ERROR, "Failed to append post ID to template builder: %s", aids_failure_reason());
+            return_defer(AIDS_ERR);
+        }
+    }
+
+defer:
+    return result;
+}
+
+static int main_generate_rss(int argc, char *argv[]) {
+    Argparse_Parser parser = {0};
+    unsigned char *start_post = NULL;
+    Aids_String_Builder template_path_builder = {0};
+    char *template_path_cstr = NULL;
+    unsigned char *start_template = NULL;
+    Aids_String_Builder template_builder = {0};
+    Aids_String_Builder template_h_path_builder = {0};
+    char *template_h_path_cstr = NULL;
+    Aids_Array files = {0};
+    Aids_Array posts = {0};
+
+    int result = 0;
+    Aids_String_Slice ss = {0};
+
+    argparse_parser_init(&parser, PROGRAM_NAME " " COMMAND_GENERATE_RSS, "Compile an rss page into a C Executable", PROGRAM_VERSION);
+    argparse_add_argument(
+        &parser, (Argparse_Options){.short_name = 'f',
+                                    .long_name = "files",
+                                    .description = "Path to the Markdown files to add to the RSS feed",
+                                    .type = ARGUMENT_TYPE_POSITIONAL_REST,
+                                    .required = true});
+
+    // if (argparse_parse(&parser, argc, argv) != ARG_OK) {
+    //     aids_log(AIDS_ERROR, "Error parsing arguments: %s", argparse_failure_reason());
+    //     argparse_print_help(&parser);
+    //     exit(EXIT_FAILURE);
+    // }
+
+    // if (argparse_get_values(&parser, "files", &files) != ARG_OK) {
+    //     aids_log(AIDS_ERROR, "Failed to get files from arguments: %s", argparse_failure_reason());
+    //     exit(EXIT_FAILURE);
+    // }
+
+    aids_array_init(&posts, sizeof(Post));
+    for (unsigned int i = 1; i < argc; i++) {
+        char *filename = argv[i];
+        printf("filename is : %s\n", filename);
+
+        aids_string_slice_init(&ss, NULL, 0);
+        if (aids_io_read(filename, &ss, "r") != AIDS_OK) {
+            aids_log(AIDS_ERROR, "Failed to read file: %s: %s", filename, aids_failure_reason());
+            exit(EXIT_FAILURE);
+        }
+        start_post = ss.str; // Save the start pointer to free later
+
+        Post post = {0};
+        if (post_parse(filename, &ss, &post) != AIDS_OK) {
+            aids_log(AIDS_ERROR, "Failed to parse post from file: %s", filename);
+            exit(EXIT_FAILURE);
+        }
+
+        aids_log(AIDS_INFO, "Post ID: %.*s", (int)post.id.len, post.id.str);
+        aids_log(AIDS_INFO, "Post Title: %.*s", (int)post.meta.title.len, post.meta.title.str);
+        aids_log(AIDS_INFO, "Post Description: %.*s", (int)post.meta.description.len, post.meta.description.str);
+        aids_log(AIDS_INFO, "Post Template: %.*s", (int)post.meta.templ.len, post.meta.templ.str);
+        aids_log(AIDS_INFO, "Post Date: %.*s", (int)post.meta.date.len, post.meta.date.str);
+
+        if (aids_array_append(&posts, (unsigned char *)&post) != AIDS_OK) {
+            aids_log(AIDS_ERROR, "Failed to append post to array: %s", aids_failure_reason());
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    aids_string_builder_init(&template_path_builder);
+    if (aids_string_builder_append(&template_path_builder, "%srss.xml", TEMPLATES_DIR) != AIDS_OK) {
+        aids_log(AIDS_ERROR, "Failed to build template path: %s", aids_failure_reason());
+        exit(EXIT_FAILURE);
+    }
+    if (aids_string_builder_to_cstr(&template_path_builder, &template_path_cstr) != AIDS_OK) {
+        aids_log(AIDS_ERROR, "Failed to build template path: %s", aids_failure_reason());
+        exit(EXIT_FAILURE);
+    }
+
+    aids_string_slice_init(&ss, NULL, 0);
+    if (aids_io_read(template_path_cstr, &ss, "r") != AIDS_OK) {
+        aids_log(AIDS_ERROR, "Failed to read file: %s: %s", template_path_cstr, aids_failure_reason());
+        exit(EXIT_FAILURE);
+    }
+    start_template = ss.str; // Save the start pointer to free later
+
+    aids_string_builder_init(&template_builder);
+    if (template_insert_posts(&posts, &template_builder) != AIDS_OK) {
+        aids_log(AIDS_ERROR, "Failed to insert post into template builder: %s", aids_failure_reason());
+        exit(EXIT_FAILURE);
+    }
+    if (template_parse(template_path_cstr, &ss, &template_builder) != AIDS_OK) {
+        aids_log(AIDS_ERROR, "Failed to parse template from file: %s", template_path_cstr);
+        exit(EXIT_FAILURE);
+    }
+    Aids_String_Slice template_slice = {0};
+    aids_string_slice_init(&template_slice, NULL, 0);
+    aids_string_builder_to_slice(&template_builder, &template_slice);
+
+    aids_string_builder_init(&template_h_path_builder);
+    if (aids_string_builder_append(&template_h_path_builder, "%srss.h", BUILD_DIR) != AIDS_OK) {
+        aids_log(AIDS_ERROR, "Failed to build template header path: %s", aids_failure_reason());
+        exit(EXIT_FAILURE);
+    }
+    if (aids_string_builder_to_cstr(&template_h_path_builder, &template_h_path_cstr) != AIDS_OK) {
+        aids_log(AIDS_ERROR, "Failed to build template header path: %s", aids_failure_reason());
+        exit(EXIT_FAILURE);
+    }
+
+    if (aids_io_write(template_h_path_cstr, &template_slice, "w") != AIDS_OK) {
+        aids_log(AIDS_ERROR, "Failed to write template header file: %s: %s", template_h_path_cstr, aids_failure_reason());
+        exit(EXIT_FAILURE);
+    }
+
+    aids_log(AIDS_INFO, "Template header file generated successfully: %s", template_h_path_cstr);
+
+defer:
+    if (template_h_path_cstr != NULL) {
+        AIDS_FREE(template_h_path_cstr);
+    }
+    aids_string_builder_free(&template_h_path_builder);
+    aids_string_builder_free(&template_builder);
+    if (start_template != NULL) {
+        AIDS_FREE(start_template);
+    }
+    if (template_path_cstr != NULL) {
+        AIDS_FREE(template_path_cstr);
+    }
+    aids_string_builder_free(&template_path_builder);
+    if (start_post != NULL) {
+        AIDS_FREE(start_post);
+    }
+    argparse_parser_free(&parser);
+
+    return 0;
+}
+
+static int main_render_rss(int argc, char *argv[]) {
+    Aids_String_Builder sb = {0};
+    aids_string_builder_init(&sb);
+    Aids_String_Builder rss_path_builder = {0};
+    char *rss_path_cstr = NULL;
+
+    Aids_Array posts = {0};
+    aids_array_init(&posts, sizeof(Post));
+
+#   define write(buffer) aids_string_builder_append(&sb, "%.*s", (int)(buffer).len, (buffer).str)
+#   define markdown(buffer) aids_string_builder_append(&sb, "%.*s", (int)(buffer).len, (buffer).str)
+#   include "rss.h"
+#   undef write
+#   undef markdown
+
+    Aids_String_Slice ss = {0};
+    aids_string_slice_init(&ss, NULL, 0);
+    aids_string_builder_to_slice(&sb, &ss);
+
+    aids_string_builder_init(&rss_path_builder);
+    if (aids_string_builder_append(&rss_path_builder, "%srss.xml", DIST_DIR) != AIDS_OK) {
+        aids_log(AIDS_ERROR, "Failed to build RSS path: %s", aids_failure_reason());
+        exit(EXIT_FAILURE);
+    }
+    if (aids_string_builder_to_cstr(&rss_path_builder, &rss_path_cstr) != AIDS_OK) {
+        aids_log(AIDS_ERROR, "Failed to build RSS path: %s", aids_failure_reason());
+        exit(EXIT_FAILURE);
+    }
+
+    if (aids_io_write(rss_path_cstr, &ss, "w") != AIDS_OK) {
+        aids_log(AIDS_ERROR, "Failed to write rss.xml: %s", aids_failure_reason());
+        exit(EXIT_FAILURE);
+    }
+
+    aids_log(AIDS_INFO, "RSS file generated successfully: %s", rss_path_cstr);
+
+defer:
+    if (rss_path_cstr != NULL) {
+        AIDS_FREE(rss_path_cstr);
+    }
+    aids_string_builder_free(&rss_path_builder);
+    aids_string_builder_free(&sb);
+    return 0;
+}
+
 static void usage() {
     fprintf(stdout, "usage: %s <SUBCOMMAND> [OPTIONS]\n", PROGRAM_NAME);
     fprintf(stdout, "    %s - Generate a C executable from a HTML file\n", COMMAND_GENERATE);
@@ -506,10 +725,14 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if (strncmp(argv[1], COMMAND_GENERATE, strlen(COMMAND_GENERATE)) == 0) {
+    if (strcmp(argv[1], COMMAND_GENERATE) == 0) {
         return main_generate(argc - 1, argv + 1);
-    } else if (strncmp(argv[1], COMMAND_RENDER, strlen(COMMAND_RENDER)) == 0) {
+    } else if (strcmp(argv[1], COMMAND_RENDER) == 0) {
         return main_render(argc - 1, argv + 1);
+    } else if (strcmp(argv[1], COMMAND_GENERATE_RSS) == 0) {
+        return main_generate_rss(argc - 1, argv + 1);
+    } else if (strcmp(argv[1], COMMAND_RENDER_RSS) == 0) {
+        return main_render_rss(argc - 1, argv + 1);
     } else {
         fprintf(stderr, "Unknown command: %s\n", argv[1]);
         usage();
