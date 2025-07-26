@@ -9,10 +9,10 @@
             {% aids_array_get(&posts, i, (unsigned char **)&post); %}
             <item>
                 <title>{% write(post->meta.title); %}</title>
-                <link>https://alexjercan.github.io/posts/{% write(post->id); %}.html</link>
+                <link>https://alexjercan.github.io/{% write(post->id); %}.html</link>
                 <description>{% write(post->meta.description); %}</description>
                 <pubDate>{% write(post->meta.date); %}</pubDate>
-                <guid>https://alexjercan.github.io/posts/{% write(post->id); %}.html</guid>
+                <guid>https://alexjercan.github.io/{% write(post->id); %}.html</guid>
             </item>
         {% } %}
     </channel>
