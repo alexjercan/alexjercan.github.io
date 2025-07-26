@@ -3,7 +3,7 @@ name: Build and Deploy with Clang
 on:
   push:
     branches:
-      - main  # or your default branch
+      - master
   workflow_dispatch:
 
 jobs:
