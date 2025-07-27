@@ -1,0 +1,113 @@
+/* === Base Layout === */
+body {
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: 'Source Code Pro', monospace;
+  line-height: 1.6;
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+a {
+  color: #80cbc4;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: #b2dfdb;
+}
+
+.post-content pre {
+  background-color: #1e1e1e;
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  white-space: pre-wrap; /* allow line wrapping */
+  word-wrap: break-word;
+  font-size: 0.95em;
+  color: #cfcfcf;
+}
+
+.post-footer {
+  margin-top: 2em;
+  padding-top: 1em;
+  border-top: 1px solid #333;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  font-size: 0.9em;
+  color: #999;
+}
+
+.tags {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 0.5em;
+  flex-wrap: wrap;
+}
+
+.tag {
+  background-color: #263238;
+  color: #a5d6a7;
+  padding: 0.2em 0.6em;
+  border-radius: 4px;
+}
+
+.tag:hover {
+  background-color: #37474f;
+  color: #c5e1a5;
+}
+
+nav.pagination {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2em;
+  padding-top: 1em;
+  border-top: 1px solid #333;
+  font-size: 0.95em;
+}
+
+nav.pagination a {
+  color: #ffcc80;
+}
+
+nav.pagination a:hover {
+  color: #ffe0b2;
+}
+
+nav.pagination .disabled {
+  color: #555;
+  cursor: not-allowed;
+}
+
+h1 {
+  font-size: 2em;
+  margin-bottom: 0.25em;
+  color: #aed581;
+}
+
+time {
+  font-size: 0.9em;
+  color: #aaa;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 0 0.75rem;
+  }
+
+  nav.pagination {
+    flex-direction: column;
+    align-items: center;
+    gap: 1em;
+  }
+
+  .post-footer {
+    flex-direction: column;
+    gap: 0.5em;
+  }
+}

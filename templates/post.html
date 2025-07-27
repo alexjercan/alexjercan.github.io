@@ -2,9 +2,9 @@
 <html>
     <head>
         <title>alexjercan</title>
-        <link rel="icon" type="image/png" href="favicon.png" />
-        <link rel="stylesheet" href="reset.css" />
-        <link rel="stylesheet" href="main.css" />
+        <link rel="icon" type="image/png" href="/favicon.png" />
+        <link rel="stylesheet" href="/reset.css" />
+        <link rel="stylesheet" href="/main.css" />
         <link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="/rss.xml">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
@@ -19,8 +19,35 @@
         <meta name="twitter:card" content="summary_large_image">
     </head>
     <body>
-        <pre>
-            {% markdown(post.content); %}
-        </pre>
+        <main>
+            <article>
+                <section class="post-content">
+                    <pre>
+                        {% markdown(post.content); %}
+                    </pre>
+                </section>
+
+                <footer class="post-footer">
+                    {% if (post.meta.tags.count > 0) { %}
+                        <ul class="tags">
+                            {% for (size_t i = 0; i < post.meta.tags.count; i++) { %}
+                                {% Aids_String_Slice *tag = NULL; %}
+                                {% aids_array_get(&post.meta.tags, i, (unsigned char **)&tag); %}
+                                <li class="tag">#{% write(*tag); %}</li>
+                            {% } %}
+                        </ul>
+                    {% } %}
+                </footer>
+            </article>
+        </main>
+
+        <nav class="pagination">
+            {% if (post.meta.prev.len > 0) { %}
+                <a href="/{% write(post.meta.prev); %}" class="prev" rel="prev">&lt;| Previous</a>
+            {% } %}
+            {% if (post.meta.next.len > 0) { %}
+                <a href="/{% write(post.meta.next); %}" class="next" rel="next">Next |&gt;</a>
+            {% } %}
+        </nav>
     </body>
 </html>

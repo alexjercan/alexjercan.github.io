@@ -3,6 +3,8 @@ title: My First Post
 description: This is my first post on this blog.
 template: post
 date: Sat, 26 Jul 2025 00:00:00 -0000
+next: 0002_distr
+tags: [first, post, blog]
 ---
 
 # My First Post

@@ -151,7 +151,7 @@ typedef struct {
 
 AIDSHDEF void aids_string_builder_init(Aids_String_Builder *sb);
 AIDSHDEF Aids_Result aids_string_builder_append(Aids_String_Builder *sb, const char *format, ...) AIDS_PRINTF_FORMAT(2, 3);
-AIDSHDEF Aids_Result aids_string_builder_append_slice(Aids_String_Builder *sb, const Aids_String_Slice *slice);
+AIDSHDEF Aids_Result aids_string_builder_append_slice(Aids_String_Builder *sb, Aids_String_Slice slice);
 AIDSHDEF Aids_Result aids_string_builder_appendc(Aids_String_Builder *sb, char c);
 AIDSHDEF Aids_Result aids_string_builder_to_cstr(const Aids_String_Builder *sb, char **cstr);
 AIDSHDEF void aids_string_builder_to_slice(const Aids_String_Builder *sb, Aids_String_Slice *slice);
@@ -163,6 +163,7 @@ AIDSHDEF void aids_string_builder_free(Aids_String_Builder *sb);
 
 AIDSHDEF Aids_Result aids_io_read(const char *filename, Aids_String_Slice *ss, const char *mode);
 AIDSHDEF Aids_Result aids_io_write(const char *filename, const Aids_String_Slice *ss, const char *mode);
+AIDSHDEF Aids_Result aids_io_filename(const char *filepath, Aids_String_Slice *filename);
 
 #endif // AIDS_H
 
@@ -484,8 +485,8 @@ defer:
     return result;
 }
 
-AIDSHDEF Aids_Result aids_string_builder_append_slice(Aids_String_Builder *sb, const Aids_String_Slice *slice) {
-    return aids_array_append_many(&sb->items, slice->str, slice->len);
+AIDSHDEF Aids_Result aids_string_builder_append_slice(Aids_String_Builder *sb, Aids_String_Slice slice) {
+    return aids_array_append_many(&sb->items, slice.str, slice.len);
 }
 
 AIDSHDEF Aids_Result aids_string_builder_appendc(Aids_String_Builder *sb, char c) {
@@ -542,7 +543,7 @@ AIDSHDEF Aids_Result aids_io_read(const char *filename, Aids_String_Slice *ss, c
         line_size = fread(line, sizeof(char), LINE_MAX, file);
         Aids_String_Slice slice = { .str = (unsigned char *)line, .len = line_size };
 
-        if (aids_string_builder_append_slice(&sb, &slice) != AIDS_OK) {
+        if (aids_string_builder_append_slice(&sb, slice) != AIDS_OK) {
             aids__g_failure_reason = "Failed to append slice to string builder";
             return_defer(AIDS_ERR);
         }
@@ -591,6 +592,20 @@ defer:
     return result;
 }
 
+AIDSHDEF Aids_Result aids_io_filename(const char *filepath, Aids_String_Slice *filename) {
+    if (filepath == NULL || filename == NULL) {
+        return AIDS_ERR;
+    }
+
+    Aids_String_Slice path_slice = {0};
+    aids_string_slice_init(&path_slice, filepath, strlen(filepath));
+    *filename = path_slice;
+
+    while (aids_string_slice_tokenize(&path_slice, '/', filename));
+
+    return AIDS_OK;
+}
+
 #endif // AIDS_IMPLEMENTATION
 
 #ifndef AIDS_STRIP_PREFIX_GUARD_
@@ -624,5 +639,6 @@ defer:
 #       define string_builder_free aids_string_builder_free
 #       define io_read aids_io_read
 #       define io_write aids_io_write
+#       define io_filename aids_io_filename
 #   endif // AIDS_STRIP_PREFIX
 #endif // AIDS_STRIP_PREFIX_GUARD_

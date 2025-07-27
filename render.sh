@@ -5,23 +5,26 @@ rm -rf build
 rm -rf dist
 mkdir -p build
 mkdir -p dist
-touch ./build/template.h
+touch ./build/post.h
 touch ./build/rss.h
 
 cp *.css ./dist
 
 run_main() {
+    post_name=$(basename "$1")
+    mkdir -p ./dist/"${post_name%.*}"
+
     clang -I./build -g main.c -o ./build/main
-    ./build/main generate "$1"
+    ./build/main generate-post "$1"
     clang -I./build -g main.c -o ./build/main
-    ./build/main render
+    ./build/main render-post
 }
 
 for file in $(ls posts/*.md | sort); do
     run_main "$file"
 done
 
-new_index=$(find ./dist -name *.html -print | sort | tail -n 1)
+new_index=$(find ./dist/* -name *.html -print | sort | tail -n 1)
 cp "$new_index" ./dist/index.html
 
 clang -I./build -g main.c -o ./build/main
