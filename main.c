@@ -360,7 +360,6 @@ static int main_generate(int argc, char *argv[]) {
                                     .required = true});
 
     if (argparse_parse(&parser, argc, argv) != ARG_OK) {
-        aids_log(AIDS_ERROR, "Error parsing arguments: %s", argparse_failure_reason());
         argparse_print_help(&parser);
         exit(EXIT_FAILURE);
     }
@@ -542,7 +541,7 @@ static int main_generate_rss(int argc, char *argv[]) {
     Aids_String_Builder template_builder = {0};
     Aids_String_Builder template_h_path_builder = {0};
     char *template_h_path_cstr = NULL;
-    Aids_Array files = {0};
+    char *files[ARGPARSE_CAPACITY] = {0};
     Aids_Array posts = {0};
 
     int result = 0;
@@ -556,21 +555,16 @@ static int main_generate_rss(int argc, char *argv[]) {
                                     .type = ARGUMENT_TYPE_POSITIONAL_REST,
                                     .required = true});
 
-    // if (argparse_parse(&parser, argc, argv) != ARG_OK) {
-    //     aids_log(AIDS_ERROR, "Error parsing arguments: %s", argparse_failure_reason());
-    //     argparse_print_help(&parser);
-    //     exit(EXIT_FAILURE);
-    // }
+    if (argparse_parse(&parser, argc, argv) != ARG_OK) {
+        argparse_print_help(&parser);
+        exit(EXIT_FAILURE);
+    }
 
-    // if (argparse_get_values(&parser, "files", &files) != ARG_OK) {
-    //     aids_log(AIDS_ERROR, "Failed to get files from arguments: %s", argparse_failure_reason());
-    //     exit(EXIT_FAILURE);
-    // }
+    unsigned long file_count = argparse_get_values(&parser, "files", files);
 
     aids_array_init(&posts, sizeof(Post));
-    for (unsigned int i = 1; i < argc; i++) {
-        char *filename = argv[i];
-        printf("filename is : %s\n", filename);
+    for (unsigned int i = 0; i < file_count; i++) {
+        char *filename = files[i];
 
         aids_string_slice_init(&ss, NULL, 0);
         if (aids_io_read(filename, &ss, "r") != AIDS_OK) {
