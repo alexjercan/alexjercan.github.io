@@ -1,8 +1,7 @@
-/* === Base Layout === */
 body {
   background-color: #121212;
   color: #e0e0e0;
-  font-family: 'Source Code Pro', monospace;
+  font-family: 'Iosevka', monospace;
   line-height: 1.6;
   max-width: 800px;
   margin: 2rem auto;
@@ -79,35 +78,21 @@ nav.pagination a:hover {
   color: #ffe0b2;
 }
 
-nav.pagination .disabled {
-  color: #555;
-  cursor: not-allowed;
-}
-
-h1 {
-  font-size: 2em;
-  margin-bottom: 0.25em;
-  color: #aed581;
-}
-
-time {
+.site-footer {
+  margin-top: 4em;
+  padding: 2em 0;
+  border-top: 1px solid #333;
   font-size: 0.9em;
-  color: #aaa;
+  text-align: center;
+  color: #777;
 }
 
-@media (max-width: 600px) {
-  body {
-    padding: 0 0.75rem;
-  }
+.site-footer a {
+  color: #80cbc4;
+  text-decoration: none;
+}
 
-  nav.pagination {
-    flex-direction: column;
-    align-items: center;
-    gap: 1em;
-  }
-
-  .post-footer {
-    flex-direction: column;
-    gap: 0.5em;
-  }
+.site-footer a:hover {
+  color: #b2dfdb;
+  text-decoration: underline;
 }

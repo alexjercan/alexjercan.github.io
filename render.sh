@@ -9,6 +9,7 @@ touch ./build/post.h
 touch ./build/rss.h
 
 cp *.css ./dist
+cp favicon.ico ./dist
 
 run_main() {
     post_name=$(basename "$1")
