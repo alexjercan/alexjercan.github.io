@@ -18,6 +18,24 @@ a:hover {
   color: #b2dfdb;
 }
 
+.post-title {
+  font-size: 2em;
+  margin-bottom: 0.5em;
+  color: #ffab40;
+  border-bottom: 1px solid #333;
+}
+
+.post-header {
+  margin-bottom: 1em;
+  padding-bottom: 0.5em;
+  border-bottom: 1px solid #333;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  font-size: 0.9em;
+  color: #999;
+}
+
 .post-content pre {
   background-color: #1e1e1e;
   padding: 1em;
@@ -25,19 +43,8 @@ a:hover {
   overflow-x: auto;
   white-space: pre-wrap; /* allow line wrapping */
   word-wrap: break-word;
-  font-size: 0.95em;
+  font-size: 1em;
   color: #cfcfcf;
-}
-
-.post-footer {
-  margin-top: 2em;
-  padding-top: 1em;
-  border-top: 1px solid #333;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  font-size: 0.9em;
-  color: #999;
 }
 
 .tags {
@@ -63,19 +70,39 @@ a:hover {
 
 nav.pagination {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   margin-top: 2em;
   padding-top: 1em;
   border-top: 1px solid #333;
   font-size: 0.95em;
 }
 
-nav.pagination a {
+.pagination-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.pagination-list li {
+    display: inline;
+}
+
+.pagination-list li a {
   color: #ffcc80;
 }
 
-nav.pagination a:hover {
+.pagination-list li a:hover {
   color: #ffe0b2;
+}
+
+.pagination-list li .disabled {
+  color: #555;
+  cursor: not-allowed;
+}
+
+.pagination-list li .pagination-link {
+  border: 1px solid #333;
+  padding: 0.3em 0.6em;
 }
 
 .site-footer {
