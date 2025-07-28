@@ -119,10 +119,6 @@ static Aids_Result post_meta_set(Aids_String_Slice *field_name, Aids_String_Slic
         meta->templ = *field_value;
     } else if (strncmp((const char *)field_name->str, "date", field_name->len) == 0) {
         meta->date = *field_value;
-    } else if (strncmp((const char *)field_name->str, "prev", field_name->len) == 0) {
-        meta->prev = *field_value;
-    } else if (strncmp((const char *)field_name->str, "next", field_name->len) == 0) {
-        meta->next = *field_value;
     } else if (strncmp((const char *)field_name->str, "tags", field_name->len) == 0) {
         if (post_tags_parse(field_value, &meta->tags) != AIDS_OK) {
             aids_log(AIDS_ERROR, "Failed to parse tags from post meta");
@@ -214,6 +210,12 @@ static Aids_Result post_parse(const char *filename, Aids_String_Slice *ss, Post 
     aids_string_slice_trim(&id_slice);
     post->id = id_slice;
 
+    long post_id_value = 0;
+    if (!aids_string_slice_atol(&post->id, &post_id_value, 10)) {
+        aids_log(AIDS_ERROR, "Failed to convert post ID to long: %s", aids_failure_reason());
+        return AIDS_ERR;
+    }
+
     aids_string_slice_trim(ss);
     if (aids_string_slice_starts_with(ss, &POST_META_DELIM)) {
         aids_string_slice_skip(ss, POST_META_DELIM.len);
@@ -235,6 +237,18 @@ static Aids_Result post_parse(const char *filename, Aids_String_Slice *ss, Post 
     const size_t wpm = 200; // NOTE: 200 words per minute
     size_t reading_time = (word_count + wpm - 1) / wpm;
     post->meta.reading_time = reading_time;
+
+    if (post_id_value > 1) {
+        long prev_id_value = post_id_value - 1;
+        Aids_String_Slice prev_id_slice = aids_string_slice_from_cstr(aids_temp_sprintf("%04ld", prev_id_value));
+        post->meta.prev = prev_id_slice;
+    } else {
+        aids_string_slice_init(&post->meta.prev, NULL, 0);
+    }
+
+    long next_id_value = post_id_value + 1;
+    Aids_String_Slice next_id_slice = aids_string_slice_from_cstr(aids_temp_sprintf("%04ld", next_id_value));
+    post->meta.next = next_id_slice;
 
     return AIDS_OK;
 }

@@ -63,6 +63,10 @@
             <nav class="pagination">
                 <ul class="pagination-list">
                     <li>
+                        <a href="/0001" class="pagination-link" rel="first">|&lt;| First</a>
+                    </li>
+
+                    <li>
                         {% if (post.meta.prev.len > 0) { %}
                         <a href="/{% write(post.meta.prev); %}" class="pagination-link" rel="prev">&lt;| Prev</a>
                         {% } else { %}

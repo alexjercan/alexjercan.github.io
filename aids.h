@@ -107,6 +107,8 @@ typedef enum {
 #endif // AIDS_TEMP_CAPACITY
 AIDSHDEF void *aids_temp_alloc(size_t size);
 AIDSHDEF char *aids_temp_sprintf(const char *format, ...) AIDS_PRINTF_FORMAT(1, 2);
+AIDSHDEF size_t aids_temp_save(void);
+AIDSHDEF void aids_temp_load(size_t);
 AIDSHDEF void aids_temp_reset(void);
 AIDSHDEF const char *aids_failure_reason(void);
 
@@ -143,6 +145,7 @@ AIDSHDEF void aids_string_slice_trim(Aids_String_Slice *ss);
 AIDSHDEF boolean aids_string_slice_starts_with(Aids_String_Slice *ss, Aids_String_Slice *prefix);
 AIDSHDEF boolean aids_string_slice_ends_with(Aids_String_Slice *ss, Aids_String_Slice *suffix);
 AIDSHDEF void aids_string_slice_skip(Aids_String_Slice *ss, unsigned long count);
+AIDSHDEF boolean aids_string_slice_atol(const Aids_String_Slice *ss, long *value, int base);
 AIDSHDEF void aids_string_slice_free(Aids_String_Slice *ss);
 
 typedef struct {
@@ -231,6 +234,14 @@ AIDSHDEF char *aids_temp_sprintf(const char *format, ...) {
     va_end(args);
 
     return buffer;
+}
+
+AIDSHDEF size_t aids_temp_save(void) {
+    return aids_temp_size;
+}
+
+AIDSHDEF void aids_temp_load(size_t size) {
+    aids_temp_size = size;
 }
 
 AIDSHDEF void aids_temp_reset(void) {
@@ -439,6 +450,23 @@ AIDSHDEF void aids_string_slice_skip(Aids_String_Slice *ss, unsigned long count)
     }
 }
 
+AIDSHDEF boolean aids_string_slice_atol(const Aids_String_Slice *ss, long *value, int base) {
+    if (ss->len == 0 || ss->str == NULL) {
+        aids__g_failure_reason = "String slice is empty";
+        return false;
+    }
+
+    char *endptr = NULL;
+    long result = strtol((const char *)ss->str, &endptr, base);
+    if (endptr == NULL || endptr == (const char *)ss->str) {
+        aids__g_failure_reason = "Failed to convert string slice to long";
+        return false;
+    }
+
+    *value = result;
+    return true;
+}
+
 AIDSHDEF void aids_string_slice_free(Aids_String_Slice *ss) {
     ss->str = NULL;
     ss->len = 0;
@@ -629,11 +657,13 @@ AIDSHDEF Aids_Result aids_io_filename(const char *filepath, Aids_String_Slice *f
 #       define string_slice_starts_with aids_string_slice_starts_with
 #       define string_slice_ends_with aids_string_slice_ends_with
 #       define string_slice_skip aids_string_slice_skip
+#       define string_slice_atol aids_string_slice_atol
 #       define string_slice_free aids_string_slice_free
 #       define String_Builder Aids_String_Builder
 #       define string_builder_init aids_string_builder_init
 #       define string_builder_append aids_string_builder_append
 #       define string_builder_append_slice aids_string_builder_append_slice
+#       define string_builder_appendc aids_string_builder_appendc
 #       define string_builder_to_cstr aids_string_builder_to_cstr
 #       define string_builder_to_slice aids_string_builder_to_slice
 #       define string_builder_free aids_string_builder_free
