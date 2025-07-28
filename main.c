@@ -24,9 +24,11 @@ typedef struct {
     Aids_String_Slice description;
     Aids_String_Slice templ;
     Aids_String_Slice date;
+    Aids_Array tags; /* Aids_String_Slice */
+
+    // TODO: I probably want to factor out prev, next and reading_time as they are compiled properties, not actually part of metadata
     Aids_String_Slice prev;
     Aids_String_Slice next;
-    Aids_Array tags; /* Aids_String_Slice */
     size_t reading_time; /* in minutes */
 } Post_Meta;
 
@@ -35,9 +37,10 @@ static void post_meta_init(Post_Meta *meta) {
     aids_string_slice_init(&meta->description, NULL, 0);
     aids_string_slice_init(&meta->templ, NULL, 0);
     aids_string_slice_init(&meta->date, NULL, 0);
+    aids_array_init(&meta->tags, sizeof(Aids_String_Slice));
+
     aids_string_slice_init(&meta->prev, NULL, 0);
     aids_string_slice_init(&meta->next, NULL, 0);
-    aids_array_init(&meta->tags, sizeof(Aids_String_Slice));
     meta->reading_time = 0;
 }
 
@@ -901,3 +904,6 @@ int main(int argc, char *argv[]) {
 #include "argparse.h"
 
 // TODO: Add command to autogenerate a new post with the Metadata template
+// TODO: Add link for last post maybe: we need to list all the files in a folder for that (get the count and convert it to ID)
+// TODO: Get rid of render.sh by just loading all the posts at once
+// TODO: Optimization: render only posts that have been changed (e.g they are older than the ones in dist/ and make a cache in workflows)
