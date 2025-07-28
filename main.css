@@ -8,14 +8,9 @@ body {
   padding: 0 1rem;
 }
 
-a {
-  color: #80cbc4;
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-  color: #b2dfdb;
+.site-header {
+  text-align: center;
+  margin-bottom: 2em;
 }
 
 .post-title {
@@ -25,7 +20,7 @@ a:hover {
   border-bottom: 1px solid #333;
 }
 
-.post-header {
+.post-meta {
   margin-bottom: 1em;
   padding-bottom: 0.5em;
   border-bottom: 1px solid #333;
@@ -34,17 +29,6 @@ a:hover {
   flex-wrap: wrap;
   font-size: 0.9em;
   color: #999;
-}
-
-.post-content pre {
-  background-color: #1e1e1e;
-  padding: 1em;
-  border-radius: 8px;
-  overflow-x: auto;
-  white-space: pre-wrap; /* allow line wrapping */
-  word-wrap: break-word;
-  font-size: 1em;
-  color: #cfcfcf;
 }
 
 .tags {
@@ -66,6 +50,40 @@ a:hover {
 .tag:hover {
   background-color: #37474f;
   color: #c5e1a5;
+}
+
+.tag a {
+  color: #a5d6a7;
+  text-decoration: none;
+}
+
+.tag a:hover {
+  color: #c5e1a5;
+  text-decoration: underline;
+}
+
+.reading-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: 0.9em;
+  color: #aaa;
+}
+
+.reading-time::before {
+  content: '\1F550'; /* Unicode for clock emoji */
+  display: inline-block;
+}
+
+.post-content pre {
+  background-color: #1e1e1e;
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  white-space: pre-wrap; /* allow line wrapping */
+  word-wrap: break-word;
+  font-size: 1em;
+  color: #cfcfcf;
 }
 
 nav.pagination {
@@ -98,6 +116,7 @@ nav.pagination {
 .pagination-list li .disabled {
   color: #555;
   cursor: not-allowed;
+  pointer-events: none;
 }
 
 .pagination-list li .pagination-link {
@@ -122,4 +141,38 @@ nav.pagination {
 .site-footer a:hover {
   color: #b2dfdb;
   text-decoration: underline;
+}
+
+.error-page {
+  max-width: 600px;
+  margin: 6rem auto;
+  text-align: center;
+  color: #bbb;
+  font-size: 1.2em;
+  font-family: 'Iosevka', monospace;
+}
+
+.error-page h1 {
+  font-size: 3em;
+  color: #ffab40;
+  margin-bottom: 0.5em;
+}
+
+.error-page p {
+  margin: 1em 0;
+}
+
+.error-page .button {
+  display: inline-block;
+  padding: 0.5em 1.2em;
+  background-color: #ffab40;
+  color: #121212;
+  border-radius: 6px;
+  font-weight: bold;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.error-page .button:hover {
+  background-color: #ffca65;
 }

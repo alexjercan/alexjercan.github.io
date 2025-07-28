@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <title>alexjercan</title>
         <link rel="icon" type="image/png" href="/favicon.ico" />
         <link rel="stylesheet" href="/reset.css" />
         <link rel="stylesheet" href="/main.css" />
         <link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="/rss.xml">
+
+        <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <meta property="og:title" content="{% write(post.meta.title); %}" />
         <meta property="og:type" content="website" />
@@ -19,25 +22,32 @@
         <meta name="twitter:card" content="summary_large_image">
     </head>
     <body>
-        <header class="site-header"></header>
-
         <main>
-            <article>
-                <h1 class="post-title">
-                    {% write(post.meta.title); %}
-                </h1>
+            <header class="site-header">
+                <!-- Add some cool stuff here -->
+            </header>
 
+            <article>
                 <header class="post-header">
+                    <!-- Optional header content, like a banner or image -->
+                </header>
+
+                <h1 class="post-title">{% write(post.meta.title); %}</h1>
+
+                <section class="post-meta">
                     {% if (post.meta.tags.count > 0) { %}
                         <ul class="tags">
                             {% for (size_t i = 0; i < post.meta.tags.count; i++) { %}
                                 {% Aids_String_Slice *tag = NULL; %}
                                 {% aids_array_get(&post.meta.tags, i, (unsigned char **)&tag); %}
-                                <li class="tag">#{% write(*tag); %}</li>
+                                <li class="tag"><a href="/tags/{% write(*tag); %}">#{% write(*tag); %}</a></li>
                             {% } %}
                         </ul>
                     {% } %}
-                </header>
+                    {% if (post.meta.reading_time > 0) { %}
+                        <span class="reading-time">{% write_size_t(post.meta.reading_time); %} min read</span>
+                    {% } %}
+                </section>
 
                 <section class="post-content">
                     <pre>
@@ -45,7 +55,9 @@
                     </pre>
                 </section>
 
-                <footer class="post-footer"></footer>
+                <footer class="post-footer">
+                    <!-- Optional additional info -->
+                </footer>
             </article>
 
             <nav class="pagination">
@@ -71,12 +83,14 @@
                     </li>
                 </ul>
             </nav>
-        </main>
 
-        <footer class="site-footer">
-            <p>
-                &copy; Alex Jercan 2025 | Built from scratch in <strong>C</strong> with <a href="https://github.com/alexjercan/alexjercan.github.io">distr</a>.
-            </p>
-        </footer>
+            <footer class="site-footer">
+                <p>
+                &copy; Alex Jercan 2025
+                | Built from scratch in <strong>C</strong> with <a href="https://github.com/alexjercan/alexjercan.github.io">distr</a>
+                | <a href="/rss.xml" class="rss-link">RSS</a>
+                </p>
+            </footer>
+        </main>
     </body>
 </html>

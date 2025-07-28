@@ -27,6 +27,7 @@ typedef struct {
     Aids_String_Slice prev;
     Aids_String_Slice next;
     Aids_Array tags; /* Aids_String_Slice */
+    size_t reading_time; /* in minutes */
 } Post_Meta;
 
 static void post_meta_init(Post_Meta *meta) {
@@ -37,6 +38,7 @@ static void post_meta_init(Post_Meta *meta) {
     aids_string_slice_init(&meta->prev, NULL, 0);
     aids_string_slice_init(&meta->next, NULL, 0);
     aids_array_init(&meta->tags, sizeof(Aids_String_Slice));
+    meta->reading_time = 0;
 }
 
 static Aids_Result post_meta_validate(const Post_Meta *meta) {
@@ -177,6 +179,28 @@ static void post_init(Post *post) {
     aids_string_slice_init(&post->content, NULL, 0);
 }
 
+static size_t count_words(Aids_String_Slice text) {
+    size_t count = 0;
+    int in_word = 0;
+
+    for (size_t i = 0; i < text.len; i++) {
+        char * p = (char *)&text.str[i];
+
+        if (isspace((unsigned char)*p)) {
+            if (in_word) {
+                in_word = 0;
+            }
+        } else {
+            if (!in_word) {
+                in_word = 1;
+                count++;
+            }
+        }
+    }
+
+    return count;
+}
+
 static Aids_Result post_parse(const char *filename, Aids_String_Slice *ss, Post *post) {
     post_init(post);
 
@@ -206,6 +230,11 @@ static Aids_Result post_parse(const char *filename, Aids_String_Slice *ss, Post 
         return AIDS_ERR;
     }
     post->content = *ss;
+
+    size_t word_count = count_words(post->content);
+    const size_t wpm = 200; // NOTE: 200 words per minute
+    size_t reading_time = (word_count + wpm - 1) / wpm;
+    post->meta.reading_time = reading_time;
 
     return AIDS_OK;
 }
@@ -344,7 +373,7 @@ static Aids_Result string_builder_append_post(Aids_String_Builder *template_buil
         aids_log(AIDS_ERROR, "Failed to append post content to template builder: %s", aids_failure_reason());
         return_defer(AIDS_ERR);
     }
-    if (aids_string_builder_append(template_builder, "\");") != AIDS_OK) {
+    if (aids_string_builder_append(template_builder, "\");post.meta.reading_time = %lu;", post.meta.reading_time) != AIDS_OK) {
         aids_log(AIDS_ERROR, "Failed to append post next end to template builder: %s", aids_failure_reason());
         return_defer(AIDS_ERR);
     }
@@ -614,7 +643,9 @@ static int main_render_post(int argc, char *argv[]) {
 
 #   define write(buffer) aids_string_builder_append_slice(&sb, (buffer));
 #   define markdown(buffer) string_builder_append_html_escaped(&sb, (buffer))
+#   define write_size_t(number) aids_string_builder_append(&sb, "%zu", (size_t)(number))
 #   include "post.h"
+#   undef write_size_t
 #   undef write
 #   undef markdown
 
