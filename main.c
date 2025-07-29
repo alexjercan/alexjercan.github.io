@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "aids.h"
 #include "argparse.h"
@@ -12,6 +13,7 @@
 
 #define COMMAND_GENERATE "generate"
 #define COMMAND_RENDER "render"
+#define COMMAND_NEW "new"
 
 #define RSS_COUNT 4
 
@@ -22,6 +24,11 @@
 #define TEMPLATES_DIR "templates/"
 #define TEMPLATE_START (Aids_String_Slice){.str = (unsigned char *)"{%", .len = 2}
 #define TEMPLATE_END (Aids_String_Slice){.str = (unsigned char *)"%}", .len = 2}
+
+static unsigned long format_time(time_t *time_value, char *buffer, unsigned long max_size) {
+    struct tm *time_info = gmtime(time_value);
+    return strftime(buffer, max_size, "%a, %d %b %Y %H:%M:%S -0000", time_info);
+}
 
 static size_t count_words(Aids_String_Slice text) {
     size_t count = 0;
@@ -487,7 +494,6 @@ defer:
 
 static void template_write_to_index(Aids_String_Builder sb, Post post) {
     Aids_String_Slice ss = {0};
-    aids_string_slice_init(&ss, NULL, 0);
     aids_string_builder_to_slice(&sb, &ss);
 
     Aids_String_Builder id_path_builder = {0};
@@ -529,7 +535,6 @@ static void template_write_to_index(Aids_String_Builder sb, Post post) {
 
 static void template_write_to_rss(Aids_String_Builder sb) {
     Aids_String_Slice ss = {0};
-    aids_string_slice_init(&ss, NULL, 0);
     aids_string_builder_to_slice(&sb, &ss);
 
     Aids_String_Builder xml_path_builder = {0};
@@ -622,7 +627,7 @@ static void main_generate(int argc, char *argv[]) {
             post.meta.prev = 0;
         }
 
-        if (post.id < file_paths.count) {
+        if ((unsigned long)post.id < file_paths.count) {
             post.meta.next = post.id + 1;
         } else {
             post.meta.next = 0;
@@ -751,6 +756,14 @@ static void main_generate(int argc, char *argv[]) {
 }
 
 static void main_render(int argc, char *argv[]) {
+    Argparse_Parser parser = {0};
+
+    argparse_parser_init(&parser, PROGRAM_NAME " " COMMAND_RENDER, "Render the dist from a C executable", PROGRAM_VERSION);
+    if (argparse_parse(&parser, argc, argv) != ARG_OK) {
+        argparse_print_help(&parser);
+        exit(EXIT_FAILURE);
+    }
+
 #   define write(buffer) aids_string_builder_append_slice(&sb, (buffer));
 #   define markdown(buffer) string_builder_append_html_escaped(&sb, (buffer))
 #   define write_size_t(number) aids_string_builder_append(&sb, "%zu", (size_t)(number))
@@ -760,12 +773,137 @@ static void main_render(int argc, char *argv[]) {
 #   undef write_size_t
 #   undef write
 #   undef markdown
+
+    aids_log(AIDS_INFO, "Rendering complete. The output is in the 'dist' directory.");
+
+    argparse_parser_free(&parser);
+}
+
+static void main_new(int argc, char *argv[]) {
+    Argparse_Parser parser = {0};
+
+    argparse_parser_init(&parser, PROGRAM_NAME " " COMMAND_NEW, "Create a new post with the Metadata template", PROGRAM_VERSION);
+    argparse_add_argument(
+        &parser, (Argparse_Options){.short_name = 'p',
+                                    .long_name = "posts",
+                                    .description = "Path to the posts directory to create a new post in; defaults to 'posts'",
+                                    .type = ARGUMENT_TYPE_POSITIONAL,
+                                    .required = false});
+    argparse_add_argument(
+        &parser, (Argparse_Options){.short_name = 't',
+                                    .long_name = "title",
+                                    .description = "Title of the new post; defaults to 'Post Title'",
+                                    .type = ARGUMENT_TYPE_VALUE,
+                                    .required = false});
+    argparse_add_argument(
+        &parser, (Argparse_Options){.short_name = 'd',
+                                    .long_name = "description",
+                                    .description = "Description of the new post; defaults to 'Insert post description here.'",
+                                    .type = ARGUMENT_TYPE_VALUE,
+                                    .required = false});
+    argparse_add_argument(
+        &parser, (Argparse_Options){.short_name = 'T',
+                                    .long_name = "template",
+                                    .description = "Template of the new post; defaults to 'post'",
+                                    .type = ARGUMENT_TYPE_VALUE,
+                                    .required = false});
+    argparse_add_argument(
+        &parser, (Argparse_Options){.short_name = 'g',
+                                    .long_name = "tags",
+                                    .description = "Comma-separated tags for the new post; defaults to no tags",
+                                    .type = ARGUMENT_TYPE_VALUE_ARRAY,
+                                    .required = false});
+
+    if (argparse_parse(&parser, argc, argv) != ARG_OK) {
+        argparse_print_help(&parser);
+        exit(EXIT_FAILURE);
+    }
+
+    char *posts_directory_path = argparse_get_value_or_default(&parser, "posts", "posts");
+    char *title = argparse_get_value_or_default(&parser, "title", NULL);
+    char *description = argparse_get_value_or_default(&parser, "description", NULL);
+    char *template = argparse_get_value_or_default(&parser, "template", "post");
+    char *tags[128] = {0};
+    size_t tags_count = argparse_get_values(&parser, "tags", (char **)tags);
+    AIDS_ASSERT(tags_count < 128, "Too many tags specified, maximum is 127");
+
+    time_t now = time(NULL);
+    char date_buffer[1024] = {0};
+    unsigned long date_len = format_time(&now, date_buffer, sizeof(date_buffer));
+    AIDS_ASSERT(date_len > 0, "Date buffer is empty");
+    AIDS_ASSERT(date_len < sizeof(date_buffer), "Date buffer overflow");
+
+    Aids_String_Builder sb = {0};
+    aids_string_builder_init(&sb);
+
+    aids_string_builder_append(&sb, "---\n");
+    aids_string_builder_append(&sb, "title: %s\n", title ? title : "Post Title");
+    aids_string_builder_append(&sb, "description: %s\n", description ? description : "Insert post description here.");
+    aids_string_builder_append(&sb, "template: %s\n", template);
+    aids_string_builder_append(&sb, "date: %s\n", date_buffer);
+    if (tags_count > 0) {
+        aids_string_builder_append(&sb, "tags: [");
+        for (size_t i = 0; i < tags_count; i++) {
+            aids_string_builder_append(&sb, "\"%s\"", tags[i]);
+            if (i < tags_count - 1) {
+                aids_string_builder_append(&sb, ", ");
+            }
+        }
+        aids_string_builder_append(&sb, "]\n");
+    } else {
+        aids_string_builder_append(&sb, "tags: []\n");
+    }
+    aids_string_builder_append(&sb, "---\n\n");
+
+    aids_string_builder_append(&sb, "Insert post content here.\n");
+
+    Aids_Array file_paths = {0}; /* Aids_String_Slice */
+    aids_array_init(&file_paths, sizeof(Aids_String_Slice));
+
+    Aids_String_Slice posts_dir_slice = aids_string_slice_from_cstr(posts_directory_path);
+    if (aids_io_list(&posts_dir_slice, &file_paths, &(Aids_List_Files_Options){.order_by_name = true}) != AIDS_OK) {
+        aids_log(AIDS_ERROR, "Failed to list files in directory '%s': %s", posts_directory_path, aids_failure_reason());
+        exit(EXIT_FAILURE);
+    }
+
+    unsigned long new_post_id = file_paths.count + 1; // New post ID is one more than the current count
+
+    Aids_String_Builder new_post_path_builder = {0};
+    aids_string_builder_init(&new_post_path_builder);
+    if (aids_string_builder_append(&new_post_path_builder, "%s/%04ld.md", posts_directory_path, new_post_id) != AIDS_OK) {
+        aids_log(AIDS_ERROR, "Failed to build new post path: %s", aids_failure_reason());
+        exit(EXIT_FAILURE);
+    }
+    Aids_String_Slice new_post_path_slice = {0};
+    aids_string_builder_to_slice(&new_post_path_builder, &new_post_path_slice);
+
+    Aids_String_Slice ss = {0};
+    aids_string_builder_to_slice(&sb, &ss);
+
+    if (aids_io_write(&new_post_path_slice, &ss, "w") != AIDS_OK) {
+        aids_log(AIDS_ERROR, "Failed to write new post file: %.*s: %s", (int)new_post_path_slice.len, new_post_path_slice.str, aids_failure_reason());
+        exit(EXIT_FAILURE);
+    }
+
+    aids_log(AIDS_INFO, "New post created successfully: %.*s", (int)new_post_path_slice.len, new_post_path_slice.str);
+
+    aids_string_builder_free(&sb);
+    aids_string_builder_free(&new_post_path_builder);
+    for (size_t i = 0; i < file_paths.count; i++) {
+        Aids_String_Slice *file_path_slice = NULL;
+        aids_array_get(&file_paths, i, (unsigned char **)&file_path_slice);
+        AIDS_FREE(file_path_slice->str);
+        aids_string_slice_free(file_path_slice);
+    }
+    aids_array_free(&file_paths);
 }
 
 static void usage() {
     fprintf(stdout, "usage: %s <SUBCOMMAND> [OPTIONS]\n", PROGRAM_NAME);
     fprintf(stdout, "    %s - Generate a C executable from posts\n", COMMAND_GENERATE);
     fprintf(stdout, "    %s - Render the dist from a C executable\n", COMMAND_RENDER);
+    fprintf(stdout, "    %s - Create a new post with the Metadata template\n", COMMAND_NEW);
+    fprintf(stdout, "    help - Show this help message\n");
     fprintf(stdout, "\n");
     fprintf(stdout, "You can use --help for more information on each command.\n");
     fprintf(stdout, "\n");
@@ -782,6 +920,12 @@ int main(int argc, char *argv[]) {
         return 0;
     } else if (strcmp(argv[1], COMMAND_RENDER) == 0) {
         main_render(argc - 1, argv + 1);
+        return 0;
+    } else if (strcmp(argv[1], COMMAND_NEW) == 0) {
+        main_new(argc - 1, argv + 1);
+        return 0;
+    } else if (strcmp(argv[1], "help") == 0) {
+        usage();
         return 0;
     } else {
         fprintf(stderr, "Unknown command: %s\n", argv[1]);
