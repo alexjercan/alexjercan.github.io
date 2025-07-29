@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <dirent.h>
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -127,6 +128,7 @@ AIDSHDEF void aids_array_init(Aids_Array *da, unsigned long item_size);
 AIDSHDEF Aids_Result aids_array_append(Aids_Array *da, const unsigned char *item);
 AIDSHDEF Aids_Result aids_array_append_many(Aids_Array *da, const unsigned char *items, unsigned long count);
 AIDSHDEF Aids_Result aids_array_get(const Aids_Array *da, unsigned long index, unsigned char **item);
+AIDSHDEF void aids_array_sort(Aids_Array *da, int (*compare)(const void *, const void *));
 AIDSHDEF void aids_array_free(Aids_Array *da);
 
 typedef struct {
@@ -146,6 +148,7 @@ AIDSHDEF boolean aids_string_slice_starts_with(Aids_String_Slice *ss, Aids_Strin
 AIDSHDEF boolean aids_string_slice_ends_with(Aids_String_Slice *ss, Aids_String_Slice *suffix);
 AIDSHDEF void aids_string_slice_skip(Aids_String_Slice *ss, unsigned long count);
 AIDSHDEF boolean aids_string_slice_atol(const Aids_String_Slice *ss, long *value, int base);
+AIDSHDEF int aids_string_slice_compare(const Aids_String_Slice *ss1, const Aids_String_Slice *ss2);
 AIDSHDEF void aids_string_slice_free(Aids_String_Slice *ss);
 
 typedef struct {
@@ -164,9 +167,14 @@ AIDSHDEF void aids_string_builder_free(Aids_String_Builder *sb);
 #define LINE_MAX 1024
 #endif // LINE_MAX
 
-AIDSHDEF Aids_Result aids_io_read(const char *filename, Aids_String_Slice *ss, const char *mode);
-AIDSHDEF Aids_Result aids_io_write(const char *filename, const Aids_String_Slice *ss, const char *mode);
-AIDSHDEF Aids_Result aids_io_filename(const char *filepath, Aids_String_Slice *filename);
+typedef struct {
+    boolean order_by_name; // If true, files will be sorted by name
+} Aids_List_Files_Options;
+
+AIDSHDEF Aids_Result aids_io_read(const Aids_String_Slice *filename, Aids_String_Slice *ss, const char *mode);
+AIDSHDEF Aids_Result aids_io_write(const Aids_String_Slice *filename, const Aids_String_Slice *ss, const char *mode);
+AIDSHDEF Aids_Result aids_io_list(const Aids_String_Slice *path, Aids_Array *files, Aids_List_Files_Options *options);
+AIDSHDEF Aids_Result aids_io_basename(const Aids_String_Slice *filepath, Aids_String_Slice *filename);
 
 #endif // AIDS_H
 
@@ -330,6 +338,12 @@ defer:
     return result;
 }
 
+AIDSHDEF void aids_array_sort(Aids_Array *da, int (*compare)(const void *, const void *)) {
+    if (da->count > 0 && da->items != NULL) {
+        qsort(da->items, da->count, da->item_size, compare);
+    }
+}
+
 AIDSHDEF void aids_array_free(Aids_Array *da) {
     if (da->items != NULL) {
         AIDS_FREE(da->items);
@@ -467,6 +481,14 @@ AIDSHDEF boolean aids_string_slice_atol(const Aids_String_Slice *ss, long *value
     return true;
 }
 
+AIDSHDEF int aids_string_slice_compare(const Aids_String_Slice *ss1, const Aids_String_Slice *ss2) {
+    if (ss1->len != ss2->len) {
+        return (ss1->len < ss2->len) ? -1 : 1;
+    }
+
+    return memcmp(ss1->str, ss2->str, ss1->len);
+}
+
 AIDSHDEF void aids_string_slice_free(Aids_String_Slice *ss) {
     ss->str = NULL;
     ss->len = 0;
@@ -548,7 +570,7 @@ AIDSHDEF void aids_string_builder_free(Aids_String_Builder *sb) {
     aids_array_free(&sb->items);
 }
 
-AIDSHDEF Aids_Result aids_io_read(const char *filename, Aids_String_Slice *ss, const char *mode) {
+AIDSHDEF Aids_Result aids_io_read(const Aids_String_Slice *filename, Aids_String_Slice *ss, const char *mode) {
     Aids_Result result = AIDS_OK;
 
     unsigned long line_size;
@@ -557,9 +579,14 @@ AIDSHDEF Aids_Result aids_io_read(const char *filename, Aids_String_Slice *ss, c
     aids_string_builder_init(&sb);
 
     if (filename != NULL) {
-        file = fopen(filename, mode);
+        size_t temp = aids_temp_save();
+        char *temp_filename = aids_temp_sprintf("%.*s", (int)filename->len, filename->str);
+        AIDS_ASSERT(temp_filename != NULL, "Failed to create temporary filename");
+        file = fopen(temp_filename, mode);
+        aids_temp_load(temp);
+
         if (file == NULL) {
-            aids__g_failure_reason = aids_temp_sprintf("Failed to open file '%s' for reading", filename);
+            aids__g_failure_reason = aids_temp_sprintf("Failed to open file '%.*s' for reading", (int)filename->len, filename->str);
             return_defer(AIDS_ERR);
         }
     } else {
@@ -592,14 +619,19 @@ defer:
     return result;
 }
 
-AIDSHDEF Aids_Result aids_io_write(const char *filename, const Aids_String_Slice *ss, const char *mode) {
+AIDSHDEF Aids_Result aids_io_write(const Aids_String_Slice *filename, const Aids_String_Slice *ss, const char *mode) {
     Aids_Result result = AIDS_OK;
 
     FILE *file = NULL;
     if (filename != NULL) {
-        file = fopen(filename, mode);
+        size_t temp = aids_temp_save();
+        char *temp_filename = aids_temp_sprintf("%.*s", (int)filename->len, filename->str);
+        AIDS_ASSERT(temp_filename != NULL, "Failed to create temporary filename");
+        file = fopen(temp_filename, mode);
+        aids_temp_load(temp);
+
         if (file == NULL) {
-            aids__g_failure_reason = aids_temp_sprintf("Failed to open file '%s' for writing", filename);
+            aids__g_failure_reason = aids_temp_sprintf("Failed to open file '%.*s' for writing", (int)filename->len, filename->str);
             return_defer(AIDS_ERR);
         }
     } else {
@@ -620,15 +652,57 @@ defer:
     return result;
 }
 
-AIDSHDEF Aids_Result aids_io_filename(const char *filepath, Aids_String_Slice *filename) {
+AIDSHDEF Aids_Result aids_io_list(const Aids_String_Slice *path, Aids_Array *files /* Aids_String_Slice */, Aids_List_Files_Options *options) {
+    Aids_Result result = AIDS_OK;
+
+    size_t temp = aids_temp_save();
+    char *temp_path = aids_temp_sprintf("%.*s", (int)path->len, path->str);
+    DIR * d = opendir(temp_path);
+    aids_temp_load(temp);
+
+    if(d == NULL) {
+        aids__g_failure_reason = aids_temp_sprintf("Failed to open directory '%.*s'", (int)path->len, path->str);
+        return_defer(AIDS_ERR);
+    }
+
+    struct dirent * dir;
+    while ((dir = readdir(d)) != NULL) {
+        if(dir->d_type != DT_DIR) {
+            Aids_String_Builder sb = {0};
+            aids_string_builder_init(&sb);
+            if (aids_string_builder_append(&sb, "%.*s/%s", (int)path->len, path->str, dir->d_name) != AIDS_OK) {
+                aids__g_failure_reason = "Failed to append to string builder";
+                return_defer(AIDS_ERR);
+            }
+
+            Aids_String_Slice ss = {0};
+            aids_string_builder_to_slice(&sb, &ss);
+            if (aids_array_append(files, (unsigned char *)&ss) != AIDS_OK) {
+                aids__g_failure_reason = "Failed to append file to array";
+                return_defer(AIDS_ERR);
+            }
+        }
+    }
+
+    if (options != NULL) {
+        if (options->order_by_name) {
+            aids_array_sort(files, (int (*)(const void *, const void *))aids_string_slice_compare);
+        }
+    }
+
+defer:
+    if (d != NULL) closedir(d);
+
+    return result;
+}
+
+AIDSHDEF Aids_Result aids_io_basename(const Aids_String_Slice *filepath, Aids_String_Slice *filename) {
     if (filepath == NULL || filename == NULL) {
         return AIDS_ERR;
     }
 
-    Aids_String_Slice path_slice = {0};
-    aids_string_slice_init(&path_slice, filepath, strlen(filepath));
+    Aids_String_Slice path_slice = *filepath;
     *filename = path_slice;
-
     while (aids_string_slice_tokenize(&path_slice, '/', filename));
 
     return AIDS_OK;
@@ -669,6 +743,7 @@ AIDSHDEF Aids_Result aids_io_filename(const char *filepath, Aids_String_Slice *f
 #       define string_builder_free aids_string_builder_free
 #       define io_read aids_io_read
 #       define io_write aids_io_write
-#       define io_filename aids_io_filename
+#       define io_list aids_io_list
+#       define io_basename aids_io_basename
 #   endif // AIDS_STRIP_PREFIX
 #endif // AIDS_STRIP_PREFIX_GUARD_

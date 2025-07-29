@@ -13,7 +13,7 @@
 
         <meta property="og:title" content="{% write(post.meta.title); %}" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://alexjercan.github.io/{% write(post.id); %}" />
+        <meta property="og:url" content="https://alexjercan.github.io/{% write_id(post.id); %}" />
         <meta property="og:image" content="https://alexjercan.github.io/favicon.png" />
         <meta property="og:description" content="{% write(post.meta.description); %}" />
         <meta property="og:locale" content="en_US" />
@@ -67,8 +67,8 @@
                     </li>
 
                     <li>
-                        {% if (post.meta.prev.len > 0) { %}
-                        <a href="/{% write(post.meta.prev); %}" class="pagination-link" rel="prev">&lt;| Prev</a>
+                        {% if (post.meta.prev > 0) { %}
+                        <a href="/{% write_id(post.meta.prev); %}" class="pagination-link" rel="prev">&lt;| Prev</a>
                         {% } else { %}
                         <span class="pagination-link disabled" rel="prev">&lt;| Prev</span>
                         {% } %}
@@ -79,8 +79,8 @@
                     </li>
 
                     <li>
-                        {% if (post.meta.next.len > 0) { %}
-                        <a href="/{% write(post.meta.next); %}" class="pagination-link" rel="next">Next |&gt;</a>
+                        {% if (post.meta.next > 0) { %}
+                        <a href="/{% write_id(post.meta.next); %}" class="pagination-link" rel="next">Next |&gt;</a>
                         {% } else { %}
                         <span class="pagination-link disabled" rel="next">Next |&gt;</span>
                         {% } %}
