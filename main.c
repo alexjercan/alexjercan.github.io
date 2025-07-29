@@ -174,7 +174,7 @@ static Aids_Result post_meta_parse(Aids_String_Slice *ss, Post_Meta *meta) {
     while (ss->len > 0) {
         aids_string_slice_trim(ss);
 
-        if (aids_string_slice_starts_with(ss, &POST_META_DELIM)) {
+        if (aids_string_slice_starts_with(ss, POST_META_DELIM)) {
             aids_string_slice_skip(ss, POST_META_DELIM.len);
             break;
         }
@@ -245,7 +245,7 @@ static Aids_Result post_parse(const Aids_String_Slice *filename, Aids_String_Sli
     }
 
     aids_string_slice_trim(ss);
-    if (aids_string_slice_starts_with(ss, &POST_META_DELIM)) {
+    if (aids_string_slice_starts_with(ss, POST_META_DELIM)) {
         aids_string_slice_skip(ss, POST_META_DELIM.len);
 
         if (post_meta_parse(ss, &post->meta) != AIDS_OK) {
@@ -402,7 +402,7 @@ static Aids_Result template_parse(const Aids_String_Slice *filename, Aids_String
 
     Aids_String_Slice html = aids_string_slice_from_parts(ss->str, 0);
     while (ss->len > 0) {
-        if (aids_string_slice_starts_with(ss, &TEMPLATE_START)) {
+        if (aids_string_slice_starts_with(ss, TEMPLATE_START)) {
             if (html.len > 0) {
                 aids_string_slice_trim(&html);
 
@@ -427,7 +427,7 @@ static Aids_Result template_parse(const Aids_String_Slice *filename, Aids_String
             int start_line = line_number;
 
             Aids_String_Slice iter = *ss;
-            while (iter.len > 0 && !aids_string_slice_starts_with(&iter, &TEMPLATE_END)) {
+            while (iter.len > 0 && !aids_string_slice_starts_with(&iter, TEMPLATE_END)) {
                 if (*iter.str == '\n') {
                     line_number++;
                     col_number = 0;
@@ -796,5 +796,4 @@ int main(int argc, char *argv[]) {
 #include "argparse.h"
 
 // TODO: Add command to autogenerate a new post with the Metadata template
-// TODO: Add link for last post maybe: we need to list all the files in a folder for that (get the count and convert it to ID)
 // TODO: Optimization: render only posts that have been changed (e.g they are older than the ones in dist/ and make a cache in workflows)

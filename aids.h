@@ -144,8 +144,8 @@ AIDSHDEF Aids_String_Slice aids_string_slice_from_cstr(const char *cstr);
 AIDSHDEF void aids_string_slice_trim_left(Aids_String_Slice *ss);
 AIDSHDEF void aids_string_slice_trim_right(Aids_String_Slice *ss);
 AIDSHDEF void aids_string_slice_trim(Aids_String_Slice *ss);
-AIDSHDEF boolean aids_string_slice_starts_with(Aids_String_Slice *ss, Aids_String_Slice *prefix);
-AIDSHDEF boolean aids_string_slice_ends_with(Aids_String_Slice *ss, Aids_String_Slice *suffix);
+AIDSHDEF boolean aids_string_slice_starts_with(Aids_String_Slice *ss, Aids_String_Slice prefix);
+AIDSHDEF boolean aids_string_slice_ends_with(Aids_String_Slice *ss, Aids_String_Slice suffix);
 AIDSHDEF void aids_string_slice_skip(Aids_String_Slice *ss, unsigned long count);
 AIDSHDEF boolean aids_string_slice_atol(const Aids_String_Slice *ss, long *value, int base);
 AIDSHDEF int aids_string_slice_compare(const Aids_String_Slice *ss1, const Aids_String_Slice *ss2);
@@ -438,20 +438,20 @@ AIDSHDEF void aids_string_slice_trim(Aids_String_Slice *ss) {
     aids_string_slice_trim_right(ss);
 }
 
-AIDSHDEF boolean aids_string_slice_starts_with(Aids_String_Slice *ss, Aids_String_Slice *prefix) {
-    if (ss->len < prefix->len) {
+AIDSHDEF boolean aids_string_slice_starts_with(Aids_String_Slice *ss, Aids_String_Slice prefix) {
+    if (ss->len < prefix.len) {
         return false;
     }
 
-    return memcmp(ss->str, prefix->str, prefix->len) == 0;
+    return memcmp(ss->str, prefix.str, prefix.len) == 0;
 }
 
-AIDSHDEF boolean aids_string_slice_ends_with(Aids_String_Slice *ss, Aids_String_Slice *suffix) {
-    if (ss->len < suffix->len) {
+AIDSHDEF boolean aids_string_slice_ends_with(Aids_String_Slice *ss, Aids_String_Slice suffix) {
+    if (ss->len < suffix.len) {
         return false;
     }
 
-    return memcmp(ss->str + ss->len - suffix->len, suffix->str, suffix->len) == 0;
+    return memcmp(ss->str + ss->len - suffix.len, suffix.str, suffix.len) == 0;
 }
 
 AIDSHDEF void aids_string_slice_skip(Aids_String_Slice *ss, unsigned long count) {
@@ -713,12 +713,15 @@ AIDSHDEF Aids_Result aids_io_basename(const Aids_String_Slice *filepath, Aids_St
 #ifndef AIDS_STRIP_PREFIX_GUARD_
 #define AIDS_STRIP_PREFIX_GUARD_
 #   ifdef AIDS_STRIP_PREFIX
+
 #       define Array Aids_Array
 #       define array_init aids_array_init
 #       define array_append aids_array_append
 #       define array_append_many aids_array_append_many
 #       define array_get aids_array_get
+#       define array_sort aids_array_sort
 #       define array_free aids_array_free
+
 #       define String_Slice Aids_String_Slice
 #       define string_slice_init aids_string_slice_init
 #       define string_slice_from_parts aids_string_slice_from_parts
@@ -732,7 +735,9 @@ AIDSHDEF Aids_Result aids_io_basename(const Aids_String_Slice *filepath, Aids_St
 #       define string_slice_ends_with aids_string_slice_ends_with
 #       define string_slice_skip aids_string_slice_skip
 #       define string_slice_atol aids_string_slice_atol
+#       define string_slice_compare aids_string_slice_compare
 #       define string_slice_free aids_string_slice_free
+
 #       define String_Builder Aids_String_Builder
 #       define string_builder_init aids_string_builder_init
 #       define string_builder_append aids_string_builder_append
@@ -741,9 +746,11 @@ AIDSHDEF Aids_Result aids_io_basename(const Aids_String_Slice *filepath, Aids_St
 #       define string_builder_to_cstr aids_string_builder_to_cstr
 #       define string_builder_to_slice aids_string_builder_to_slice
 #       define string_builder_free aids_string_builder_free
+
 #       define io_read aids_io_read
 #       define io_write aids_io_write
 #       define io_list aids_io_list
 #       define io_basename aids_io_basename
+
 #   endif // AIDS_STRIP_PREFIX
 #endif // AIDS_STRIP_PREFIX_GUARD_
