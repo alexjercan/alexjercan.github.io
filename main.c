@@ -298,15 +298,150 @@ defer:
     return result;
 }
 
+static void string_builder_appendc_html_escaped(Aids_String_Builder *sb, char ch) {
+    switch (ch) {
+        case '&':  aids_string_builder_append(sb, "&amp;");  break;
+        case '<':  aids_string_builder_append(sb, "&lt;");   break;
+        case '>':  aids_string_builder_append(sb, "&gt;");   break;
+        case '"':  aids_string_builder_append(sb, "&quot;"); break;
+        case '\'': aids_string_builder_append(sb, "&#39;");  break;
+        default:   aids_string_builder_appendc(sb, ch);
+    }
+}
+
 static void string_builder_append_html_escaped(Aids_String_Builder *sb, Aids_String_Slice ss) {
     for (size_t i = 0; i < ss.len; ++i) {
-        switch (ss.str[i]) {
-            case '&':  aids_string_builder_append(sb, "&amp;");  break;
-            case '<':  aids_string_builder_append(sb, "&lt;");   break;
-            case '>':  aids_string_builder_append(sb, "&gt;");   break;
-            case '"':  aids_string_builder_append(sb, "&quot;"); break;
-            case '\'': aids_string_builder_append(sb, "&#39;");  break;
-            default:   aids_string_builder_appendc(sb, ss.str[i]);
+        string_builder_appendc_html_escaped(sb, ss.str[i]);
+    }
+}
+
+static void try_parse_url(Aids_String_Builder *sb, Aids_String_Slice *start) {
+    Aids_String_Slice name = {0};
+    Aids_String_Slice href = {0};
+
+    Aids_String_Slice iter = *start;
+
+    char ch = *iter.str;
+    if (ch == '[') {
+        aids_string_slice_skip(&iter, 1);
+
+        while (iter.len > 0) {
+            char ch = *iter.str;
+            if (ch == '[') {
+                Aids_String_Slice ss = {0};
+                size_t len = iter.len - start->len;
+                aids_string_slice_init(&ss, (const char *)start->str, len);
+                string_builder_append_html_escaped(sb, ss);
+                *start = iter;
+                return;
+            } else if (ch == ']') {
+                size_t len = iter.str - start->str - 1;
+                aids_string_slice_init(&name, (const char *)start->str+1, len);
+                aids_string_slice_skip(&iter, 1);
+                break;
+            } else {
+                aids_string_slice_skip(&iter, 1);
+            }
+        }
+    } else {
+        return;
+    }
+
+    aids_string_slice_trim_left(&iter);
+
+    Aids_String_Slice iter2 = {0};
+    iter2.str = iter.str;
+    iter2.len = iter.len;
+    ch = *iter2.str;
+    if (ch == '(') {
+        aids_string_slice_skip(&iter2, 1);
+
+        while (iter2.len > 0) {
+            char ch = *iter2.str;
+            if (ch == ')') {
+                size_t len = iter2.str - iter.str - 1;
+                aids_string_slice_init(&href, (const char *)iter.str+1, len);
+                aids_string_slice_skip(&iter2, 1);
+                break;
+            } else {
+                aids_string_slice_skip(&iter2, 1);
+            }
+        }
+    } else {
+        Aids_String_Slice ss = {0};
+        size_t len = iter2.str - start->str;
+        aids_string_slice_init(&ss, (const char *)start->str, len);
+        string_builder_append_html_escaped(sb, ss);
+        *start = iter2;
+        return;
+    }
+
+    aids_string_builder_append(sb, "<a href=\"");
+    string_builder_append_html_escaped(sb, href);
+    aids_string_builder_append(sb, "\">");
+    string_builder_append_html_escaped(sb, name);
+    aids_string_builder_append(sb, "</a>");
+
+    *start = iter2;
+}
+
+static void markdown_parse(Aids_String_Builder *sb, Aids_String_Slice content) {
+    while (content.len > 0) {
+        aids_string_slice_trim_left(&content);
+        if (content.len == 0) {
+            break;
+        }
+
+        char ch = *content.str;
+        if (ch == '#') {
+            aids_string_slice_skip(&content, 1);
+
+            size_t count = 1;
+            while (content.len > 0) {
+                char ch = *content.str;
+                if (ch == '#') {
+                    aids_string_slice_skip(&content, 1);
+                    count += 1;
+                } else {
+                    break;
+                }
+            }
+
+            aids_string_builder_append(sb, "<h%zu>", count);
+
+            Aids_String_Slice header = {0};
+            aids_string_slice_trim_left(&content);
+            aids_string_slice_tokenize(&content, '\n', &header);
+            string_builder_append_html_escaped(sb, header);
+
+            aids_string_builder_append(sb, "</h%zu>", count);
+        } else {
+            aids_string_builder_append(sb, "<p>");
+
+            while (content.len > 0) {
+                char ch = *content.str;
+                if (ch == '[') {
+                    try_parse_url(sb, &content);
+                } else if (ch == '\n') {
+                    aids_string_slice_skip(&content, 1);
+                    char ch = *content.str;
+                    if (ch == '\n') {
+                        break;
+                    } else {
+                        aids_string_slice_trim_left(&content);
+                        if (ch == '#') {
+                            break;
+                        } else {
+                            string_builder_appendc_html_escaped(sb, ' ');
+                        }
+                    }
+                } else {
+                    string_builder_appendc_html_escaped(sb, ch);
+                    aids_string_slice_skip(&content, 1);
+                }
+            }
+
+            aids_string_builder_append(sb, "</p>");
         }
     }
 }
@@ -765,7 +900,7 @@ static void main_render(int argc, char *argv[]) {
     }
 
 #   define write(buffer) aids_string_builder_append_slice(&sb, (buffer));
-#   define markdown(buffer) string_builder_append_html_escaped(&sb, (buffer))
+#   define markdown(buffer) markdown_parse(&sb, (buffer));
 #   define write_size_t(number) aids_string_builder_append(&sb, "%zu", (size_t)(number))
 #   define write_id(id) aids_string_builder_append(&sb, "%04ld", (id))
 #   include "distr.h"
@@ -939,5 +1074,4 @@ int main(int argc, char *argv[]) {
 #define ARGPARSE_IMPLEMENTATION
 #include "argparse.h"
 
-// TODO: Add command to autogenerate a new post with the Metadata template
 // TODO: Optimization: render only posts that have been changed (e.g they are older than the ones in dist/ and make a cache in workflows)

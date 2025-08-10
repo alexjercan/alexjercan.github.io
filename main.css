@@ -176,3 +176,18 @@ nav.pagination {
 .error-page .button:hover {
   background-color: #ffca65;
 }
+
+.post-content h1 {
+  font-size: 1.2em;
+  margin-bottom: 0.5em;
+}
+
+.post-content a {
+  color: #80cbc4;
+  text-decoration: none;
+}
+
+.post-content a:hover {
+  color: #b2dfdb;
+  text-decoration: underline;
+}
