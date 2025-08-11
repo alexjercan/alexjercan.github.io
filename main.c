@@ -7,6 +7,7 @@
 
 #include "aids.h"
 #include "argparse.h"
+#include "markdown.h"
 
 #define PROGRAM_NAME "dister"
 #define PROGRAM_VERSION "0.1.0"
@@ -315,135 +316,92 @@ static void string_builder_append_html_escaped(Aids_String_Builder *sb, Aids_Str
     }
 }
 
-static void try_parse_url(Aids_String_Builder *sb, Aids_String_Slice *start) {
-    Aids_String_Slice name = {0};
-    Aids_String_Slice href = {0};
-
-    Aids_String_Slice iter = *start;
-
-    char ch = *iter.str;
-    if (ch == '[') {
-        aids_string_slice_skip(&iter, 1);
-
-        while (iter.len > 0) {
-            char ch = *iter.str;
-            if (ch == '[') {
-                Aids_String_Slice ss = {0};
-                size_t len = iter.len - start->len;
-                aids_string_slice_init(&ss, (const char *)start->str, len);
-                string_builder_append_html_escaped(sb, ss);
-                *start = iter;
-                return;
-            } else if (ch == ']') {
-                size_t len = iter.str - start->str - 1;
-                aids_string_slice_init(&name, (const char *)start->str+1, len);
-                aids_string_slice_skip(&iter, 1);
-                break;
-            } else {
-                aids_string_slice_skip(&iter, 1);
-            }
-        }
-    } else {
-        return;
-    }
-
-    aids_string_slice_trim_left(&iter);
-
-    Aids_String_Slice iter2 = {0};
-    iter2.str = iter.str;
-    iter2.len = iter.len;
-    ch = *iter2.str;
-    if (ch == '(') {
-        aids_string_slice_skip(&iter2, 1);
-
-        while (iter2.len > 0) {
-            char ch = *iter2.str;
-            if (ch == ')') {
-                size_t len = iter2.str - iter.str - 1;
-                aids_string_slice_init(&href, (const char *)iter.str+1, len);
-                aids_string_slice_skip(&iter2, 1);
-                break;
-            } else {
-                aids_string_slice_skip(&iter2, 1);
-            }
-        }
-    } else {
-        Aids_String_Slice ss = {0};
-        size_t len = iter2.str - start->str;
-        aids_string_slice_init(&ss, (const char *)start->str, len);
-        string_builder_append_html_escaped(sb, ss);
-        *start = iter2;
-        return;
-    }
-
-    aids_string_builder_append(sb, "<a href=\"");
-    string_builder_append_html_escaped(sb, href);
-    aids_string_builder_append(sb, "\">");
-    string_builder_append_html_escaped(sb, name);
-    aids_string_builder_append(sb, "</a>");
-
-    *start = iter2;
+static void markdown_print_text(Aids_String_Builder *sb, const Markdown_Text *text) {
+    string_builder_append_html_escaped(sb, text->value);
 }
 
-static void markdown_parse(Aids_String_Builder *sb, Aids_String_Slice content) {
-    while (content.len > 0) {
-        aids_string_slice_trim_left(&content);
-        if (content.len == 0) {
-            break;
+static void markdown_print_phrasing_content(Aids_String_Builder *sb, const Markdown_Phrasing_Content *content);
+
+static void markdown_print_children(Aids_String_Builder *sb, const Aids_Array *children) {
+    for (size_t i = 0; i < children->count; i++) {
+        Markdown_Phrasing_Content *content = NULL;
+        if (aids_array_get(children, i, (unsigned char **)&content) != AIDS_OK) {
+            aids_log(AIDS_ERROR, "Failed to get phrasing content at index %zu", i);
+            exit(EXIT_FAILURE);
         }
-
-        char ch = *content.str;
-        if (ch == '#') {
-            aids_string_slice_skip(&content, 1);
-
-            size_t count = 1;
-            while (content.len > 0) {
-                char ch = *content.str;
-                if (ch == '#') {
-                    aids_string_slice_skip(&content, 1);
-                    count += 1;
-                } else {
-                    break;
-                }
-            }
-
-            aids_string_builder_append(sb, "<h%zu>", count);
-
-            Aids_String_Slice header = {0};
-            aids_string_slice_trim_left(&content);
-            aids_string_slice_tokenize(&content, '\n', &header);
-            string_builder_append_html_escaped(sb, header);
-
-            aids_string_builder_append(sb, "</h%zu>", count);
-        } else {
-            aids_string_builder_append(sb, "<p>");
-
-            while (content.len > 0) {
-                char ch = *content.str;
-                if (ch == '[') {
-                    try_parse_url(sb, &content);
-                } else if (ch == '\n') {
-                    aids_string_slice_skip(&content, 1);
-                    char ch = *content.str;
-                    if (ch == '\n') {
-                        break;
-                    } else {
-                        aids_string_slice_trim_left(&content);
-                        if (ch == '#') {
-                            break;
-                        } else {
-                            string_builder_appendc_html_escaped(sb, ' ');
-                        }
-                    }
-                } else {
-                    string_builder_appendc_html_escaped(sb, ch);
-                    aids_string_slice_skip(&content, 1);
-                }
-            }
-
-            aids_string_builder_append(sb, "</p>");
+        markdown_print_phrasing_content(sb, content);
+        if (i < children->count - 1) {
+            aids_string_builder_append(sb, " ");
         }
     }
+}
+
+static void markdown_print_phrasing_content(Aids_String_Builder *sb, const Markdown_Phrasing_Content *content) {
+    switch (content->kind) {
+        case MD_LINK:
+            aids_string_builder_append(sb, "<a href=\"");
+            string_builder_append_html_escaped(sb, content->link.url);
+            if (content->link.title.len > 0) {
+                aids_string_builder_append(sb, "\" title=\"");
+                string_builder_append_html_escaped(sb, content->link.title);
+            }
+            aids_string_builder_append(sb, "\">");
+
+            markdown_print_children(sb, &content->link.children);
+            aids_string_builder_append(sb, "</a>");
+
+            break;
+        case MD_TEXT:
+            markdown_print_text(sb, &content->text);
+            break;
+        default:
+            aids_log(AIDS_ERROR, "Unknown phrasing content kind");
+            exit(EXIT_FAILURE);
+    }
+}
+
+static void markdown_print_heading(Aids_String_Builder *sb, const Markdown_Heading *heading) {
+    aids_string_builder_append(sb, "<h%zu>", heading->depth);
+    markdown_print_children(sb, &heading->children);
+    aids_string_builder_append(sb, "</h%zu>", heading->depth);
+}
+
+static void markdown_print_paragraph(Aids_String_Builder *sb, const Markdown_Paragraph *paragraph) {
+    aids_string_builder_append(sb, "<p>");
+    markdown_print_children(sb, &paragraph->children);
+    aids_string_builder_append(sb, "</p>");
+}
+
+static void markdown_print_flow_content(Aids_String_Builder *sb, const Markdown_Flow_Content *flow_content) {
+    switch (flow_content->kind) {
+        case MD_HEADING:
+            markdown_print_heading(sb, &flow_content->heading);
+            break;
+        case MD_PARAGRAPH:
+            markdown_print_paragraph(sb, &flow_content->paragraph);
+            break;
+        default:
+            aids_log(AIDS_ERROR, "Unknown flow content kind");
+            exit(EXIT_FAILURE);
+    }
+}
+
+static void markdown_print_root(Aids_String_Builder *sb, const Markdown_Root *root) {
+    for (size_t i = 0; i < root->children.count; i++) {
+        Markdown_Flow_Content *flow_content = NULL;
+        if (aids_array_get(&root->children, i, (unsigned char **)&flow_content) != AIDS_OK) {
+            aids_log(AIDS_ERROR, "Failed to get flow content at index %zu", i);
+            exit(EXIT_FAILURE);
+        }
+
+        markdown_print_flow_content(sb, flow_content);
+    }
+}
+
+static void markdown_append(Aids_String_Builder *sb, Aids_String_Slice ss) {
+    Markdown_Root root;
+    markdown_parse(ss, &root);
+    markdown_print_root(sb, &root);
 }
 
 static Aids_Result string_builder_append_post(Aids_String_Builder *template_builder, Post post) {
@@ -900,7 +858,7 @@ static void main_render(int argc, char *argv[]) {
     }
 
 #   define write(buffer) aids_string_builder_append_slice(&sb, (buffer));
-#   define markdown(buffer) markdown_parse(&sb, (buffer));
+#   define markdown(buffer) markdown_append(&sb, (buffer));
 #   define write_size_t(number) aids_string_builder_append(&sb, "%zu", (size_t)(number))
 #   define write_id(id) aids_string_builder_append(&sb, "%04ld", (id))
 #   include "distr.h"
@@ -1073,5 +1031,7 @@ int main(int argc, char *argv[]) {
 #include "aids.h"
 #define ARGPARSE_IMPLEMENTATION
 #include "argparse.h"
+#define MARKDOWN_IMPLEMENTATION
+#include "markdown.h"
 
 // TODO: Optimization: render only posts that have been changed (e.g they are older than the ones in dist/ and make a cache in workflows)
