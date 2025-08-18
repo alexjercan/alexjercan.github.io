@@ -370,6 +370,16 @@ static void markdown_print_phrasing_content(Aids_String_Builder *sb, const Markd
     }
 }
 
+static void markdown_print_code(Aids_String_Builder *sb, const Markdown_Code *code) {
+    aids_string_builder_append(sb, "<pre><code");
+    if (code->lang.len > 0) {
+        aids_string_builder_append(sb, " class=\"language-%.*s\"", (int)code->lang.len, code->lang.str);
+    }
+    aids_string_builder_append(sb, ">");
+    string_builder_append_html_escaped(sb, code->value);
+    aids_string_builder_append(sb, "</code></pre>");
+}
+
 static void markdown_print_heading(Aids_String_Builder *sb, const Markdown_Heading *heading) {
     aids_string_builder_append(sb, "<h%zu>", heading->depth);
     markdown_print_children(sb, &heading->children);
@@ -384,6 +394,9 @@ static void markdown_print_paragraph(Aids_String_Builder *sb, const Markdown_Par
 
 static void markdown_print_flow_content(Aids_String_Builder *sb, const Markdown_Flow_Content *flow_content) {
     switch (flow_content->kind) {
+        case MD_CODE:
+            markdown_print_code(sb, &flow_content->code);
+            break;
         case MD_HEADING:
             markdown_print_heading(sb, &flow_content->heading);
             break;
