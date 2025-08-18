@@ -343,6 +343,11 @@ static void markdown_print_phrasing_content(Aids_String_Builder *sb, const Markd
             markdown_print_children(sb, &content->emphasis.children);
             aids_string_builder_append(sb, "</em>");
             break;
+        case MD_INLINE_CODE:
+            aids_string_builder_append(sb, "<code>");
+            string_builder_append_html_escaped(sb, content->inline_code.value);
+            aids_string_builder_append(sb, "</code>");
+            break;
         case MD_LINK:
             aids_string_builder_append(sb, "<a href=\"");
             string_builder_append_html_escaped(sb, content->link.url);
