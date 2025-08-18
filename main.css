@@ -191,3 +191,13 @@ nav.pagination {
   color: #b2dfdb;
   text-decoration: underline;
 }
+
+.post-content em {
+    font-style: italic;
+    color: #ffab40;
+}
+
+.post-content strong {
+    font-weight: bold;
+    color: #ffab40;
+}

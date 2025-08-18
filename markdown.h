@@ -14,6 +14,10 @@
 #include "aids.h"
 
 typedef struct {
+    Aids_Array children; /* Markdown_Phrasing_Content */
+} Markdown_Emphasis;
+
+typedef struct {
     unsigned long depth;
     Aids_Array children; /* Markdown_Phrasing_Content */
 } Markdown_Heading;
@@ -23,6 +27,10 @@ typedef struct {
     Aids_String_Slice title; /* Optional */
     Aids_Array children; /* Markdown_Phrasing_Content */
 } Markdown_Link;
+
+typedef struct {
+    Aids_Array children; /* Markdown_Phrasing_Content */
+} Markdown_Strong;
 
 typedef struct {
     Aids_Array children; /* Markdown_Phrasing_Content */
@@ -52,14 +60,18 @@ typedef struct {
 } Markdown_Flow_Content;
 
 typedef enum {
+    MD_EMPHASIS,
     MD_LINK,
+    MD_STRONG,
     MD_TEXT,
 } Markdown_Phrasing_Content_Kind;
 
 typedef struct {
     Markdown_Phrasing_Content_Kind kind;
     union {
+        Markdown_Emphasis emphasis;
         Markdown_Link link;
+        Markdown_Strong strong;
         Markdown_Text text;
     };
 } Markdown_Phrasing_Content;
@@ -76,6 +88,14 @@ static char markdown_peek(Aids_String_Slice *input) {
     }
 
     return input->str[0];
+}
+
+static char markdown_peek2(Aids_String_Slice *input) {
+    if (input->len == 1) {
+        return EOF;
+    }
+
+    return input->str[1];
 }
 
 static char markdown_read(Aids_String_Slice *input) {
@@ -158,10 +178,118 @@ static boolean markdown_try_parse_link(Aids_String_Slice *input, Markdown_Phrasi
     return true;
 }
 
+static boolean markdown_try_parse_emphasis(Aids_String_Slice *input, Markdown_Phrasing_Content *phrasing_content, char tag) {
+    phrasing_content->kind = MD_EMPHASIS;
+
+    Aids_String_Slice iter = *input;
+    char ch = markdown_peek(&iter);
+    if (ch != tag) {
+        return false;
+    }
+    aids_string_slice_skip(&iter, 1);
+
+    Aids_String_Slice content = aids_string_slice_from_parts(iter.str, 0);
+    while (true) {
+        char ch = markdown_peek(&iter);
+        if (ch == tag) {
+            aids_string_slice_skip(&iter, 1);
+            break;
+        } else if (ch == EOF) {
+            return false;
+        } else {
+            content.len++;
+            aids_string_slice_skip(&iter, 1);
+        }
+    }
+
+    aids_array_init(&phrasing_content->emphasis.children, sizeof(Markdown_Phrasing_Content));
+    while (content.len > 0) {
+        aids_string_slice_trim_left(&content);
+        if (content.len == 0) {
+            break;
+        }
+
+        Markdown_Phrasing_Content phrasing_content_child = {0};
+        markdown_parse_phrasing_content(&content, &phrasing_content_child);
+
+        AIDS_ASSERT(aids_array_append(&phrasing_content->emphasis.children, (unsigned char *)&phrasing_content_child) == AIDS_OK, aids_failure_reason());
+    }
+
+    *input = iter;
+
+    return true;
+}
+
+static boolean markdown_try_parse_strong(Aids_String_Slice *input, Markdown_Phrasing_Content *phrasing_content, char tag) {
+    phrasing_content->kind = MD_STRONG;
+
+    Aids_String_Slice iter = *input;
+    char ch = markdown_peek(&iter);
+    char ch2 = markdown_peek2(&iter);
+    if (ch != tag || ch2 != tag) {
+        return false;
+    }
+    aids_string_slice_skip(&iter, 2);
+
+    Aids_String_Slice content = aids_string_slice_from_parts(iter.str, 0);
+    while (true) {
+        char ch = markdown_peek(&iter);
+        char ch2 = markdown_peek2(&iter);
+        if (ch == tag && ch2 == tag) {
+            aids_string_slice_skip(&iter, 2);
+            break;
+        } else if (ch == EOF) {
+            return false;
+        } else {
+            content.len++;
+            aids_string_slice_skip(&iter, 1);
+        }
+    }
+
+    aids_array_init(&phrasing_content->strong.children, sizeof(Markdown_Phrasing_Content));
+    while (content.len > 0) {
+        aids_string_slice_trim_left(&content);
+        if (content.len == 0) {
+            break;
+        }
+
+        Markdown_Phrasing_Content phrasing_content_child = {0};
+        markdown_parse_phrasing_content(&content, &phrasing_content_child);
+
+        AIDS_ASSERT(aids_array_append(&phrasing_content->strong.children, (unsigned char *)&phrasing_content_child) == AIDS_OK, aids_failure_reason());
+    }
+
+    *input = iter;
+
+    return true;
+}
+
 static void markdown_parse_phrasing_content(Aids_String_Slice *input, Markdown_Phrasing_Content *phrasing_content) {
     boolean is_text = false;
-    if (markdown_peek(input) == '[') {
+    char ch = markdown_peek(input);
+    char ch2 = markdown_peek2(input);
+    if (ch == '[') {
         if (markdown_try_parse_link(input, phrasing_content)) {
+            return;
+        }
+        is_text = true;
+    } else if (ch == '*' && ch2 == '*') {
+        if (markdown_try_parse_strong(input, phrasing_content, '*')) {
+            return;
+        }
+        is_text = true;
+    } else if (ch == '_' && ch2 == '_') {
+        if (markdown_try_parse_strong(input, phrasing_content, '_')) {
+            return;
+        }
+        is_text = true;
+    } else if (ch == '*') {
+        if (markdown_try_parse_emphasis(input, phrasing_content, '*')) {
+            return;
+        }
+        is_text = true;
+    } else if (ch == '_') {
+        if (markdown_try_parse_emphasis(input, phrasing_content, '_')) {
             return;
         }
         is_text = true;
@@ -172,14 +300,16 @@ static void markdown_parse_phrasing_content(Aids_String_Slice *input, Markdown_P
     phrasing_content->text.value.len = 0;
 
     while (input->len > 0 && markdown_peek(input) != '\n') {
-        if (!is_text && markdown_peek(input) == '[') {
+        char ch = markdown_peek(input);
+        if (!is_text && (ch == '[' || ch == '*' || ch == '_')) {
             break;
         }
 
         phrasing_content->text.value.len++;
         markdown_read(input);
+        is_text = false;
     }
-
+    aids_string_slice_trim(&phrasing_content->text.value);
 }
 
 static void markdown_parse_flow_content(Aids_String_Slice *input, Markdown_Flow_Content *flow_content) {

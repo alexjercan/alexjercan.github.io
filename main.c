@@ -338,6 +338,11 @@ static void markdown_print_children(Aids_String_Builder *sb, const Aids_Array *c
 
 static void markdown_print_phrasing_content(Aids_String_Builder *sb, const Markdown_Phrasing_Content *content) {
     switch (content->kind) {
+        case MD_EMPHASIS:
+            aids_string_builder_append(sb, "<em>");
+            markdown_print_children(sb, &content->emphasis.children);
+            aids_string_builder_append(sb, "</em>");
+            break;
         case MD_LINK:
             aids_string_builder_append(sb, "<a href=\"");
             string_builder_append_html_escaped(sb, content->link.url);
@@ -350,6 +355,11 @@ static void markdown_print_phrasing_content(Aids_String_Builder *sb, const Markd
             markdown_print_children(sb, &content->link.children);
             aids_string_builder_append(sb, "</a>");
 
+            break;
+        case MD_STRONG:
+            aids_string_builder_append(sb, "<strong>");
+            markdown_print_children(sb, &content->strong.children);
+            aids_string_builder_append(sb, "</strong>");
             break;
         case MD_TEXT:
             markdown_print_text(sb, &content->text);
