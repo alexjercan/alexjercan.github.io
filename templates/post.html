@@ -39,7 +39,7 @@
                         <ul class="tags">
                             {% for (size_t i = 0; i < post.meta.tags.count; i++) { %}
                                 {% Aids_String_Slice *tag = NULL; %}
-                                {% aids_array_get(&post.meta.tags, i, (unsigned char **)&tag); %}
+                                {% aids_array_get(&post.meta.tags, i, (void **)&tag); %}
                                 <li class="tag"><a href="/tags/{% write(*tag); %}">#{% write(*tag); %}</a></li>
                             {% } %}
                         </ul>

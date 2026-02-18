@@ -53,6 +53,8 @@ static size_t count_words(Aids_String_Slice text) {
     return count;
 }
 
+/* Post - implementation for metadata parsing and validation */
+
 typedef struct {
     Aids_String_Slice title;
     Aids_String_Slice description;
@@ -272,6 +274,8 @@ static Aids_Result post_parse(const Aids_String_Slice *filename, Aids_String_Sli
     return AIDS_OK;
 }
 
+/* Markdown to HTML rendering */
+
 static Aids_Result string_builder_append_slice_escaped(Aids_String_Builder *builder, const Aids_String_Slice *slice) {
     Aids_Result result = AIDS_OK;
 
@@ -325,7 +329,7 @@ static void markdown_print_phrasing_content(Aids_String_Builder *sb, const Markd
 static void markdown_print_children(Aids_String_Builder *sb, const Aids_Array *children) {
     for (size_t i = 0; i < children->count; i++) {
         Markdown_Phrasing_Content *content = NULL;
-        if (aids_array_get(children, i, (unsigned char **)&content) != AIDS_OK) {
+        if (aids_array_get(children, i, (void **)&content) != AIDS_OK) {
             aids_log(AIDS_ERROR, "Failed to get phrasing content at index %zu", i);
             exit(EXIT_FAILURE);
         }
@@ -417,7 +421,7 @@ static void markdown_print_flow_content(Aids_String_Builder *sb, const Markdown_
 static void markdown_print_root(Aids_String_Builder *sb, const Markdown_Root *root) {
     for (size_t i = 0; i < root->children.count; i++) {
         Markdown_Flow_Content *flow_content = NULL;
-        if (aids_array_get(&root->children, i, (unsigned char **)&flow_content) != AIDS_OK) {
+        if (aids_array_get(&root->children, i, (void **)&flow_content) != AIDS_OK) {
             aids_log(AIDS_ERROR, "Failed to get flow content at index %zu", i);
             exit(EXIT_FAILURE);
         }
@@ -425,6 +429,8 @@ static void markdown_print_root(Aids_String_Builder *sb, const Markdown_Root *ro
         markdown_print_flow_content(sb, flow_content);
     }
 }
+
+/* Distr main logic */
 
 static void markdown_append(Aids_String_Builder *sb, Aids_String_Slice ss) {
     Markdown_Root root;
@@ -485,7 +491,7 @@ static Aids_Result string_builder_append_post(Aids_String_Builder *template_buil
     }
     for (unsigned long i = 0; i < post.meta.tags.count; i++) {
         Aids_String_Slice *tag = NULL;
-        if (aids_array_get(&post.meta.tags, i, (unsigned char **)&tag) != AIDS_OK) {
+        if (aids_array_get(&post.meta.tags, i, (void **)&tag) != AIDS_OK) {
             aids_log(AIDS_ERROR, "Failed to get tag from post tags array: %s", aids_failure_reason());
             return_defer(AIDS_ERR);
         }
@@ -714,7 +720,7 @@ static void main_generate(int argc, char *argv[]) {
 
     for (size_t i = 0; i < file_paths.count; i++) {
         Aids_String_Slice *file_path_slice = NULL;
-        aids_array_get(&file_paths, i, (unsigned char **)&file_path_slice);
+        aids_array_get(&file_paths, i, (void **)&file_path_slice);
 
         Aids_String_Slice ss = {0};
         aids_string_slice_init(&ss, NULL, 0);
@@ -868,7 +874,7 @@ static void main_generate(int argc, char *argv[]) {
     aids_string_builder_free(&template_builder);
     for (size_t i = 0; i < file_paths.count; i++) {
         Aids_String_Slice *file_path_slice = NULL;
-        aids_array_get(&file_paths, i, (unsigned char **)&file_path_slice);
+        aids_array_get(&file_paths, i, (void **)&file_path_slice);
         AIDS_FREE(file_path_slice->str);
         aids_string_slice_free(file_path_slice);
     }
@@ -1012,7 +1018,7 @@ static void main_new(int argc, char *argv[]) {
     aids_string_builder_free(&new_post_path_builder);
     for (size_t i = 0; i < file_paths.count; i++) {
         Aids_String_Slice *file_path_slice = NULL;
-        aids_array_get(&file_paths, i, (unsigned char **)&file_path_slice);
+        aids_array_get(&file_paths, i, (void **)&file_path_slice);
         AIDS_FREE(file_path_slice->str);
         aids_string_slice_free(file_path_slice);
     }

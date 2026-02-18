@@ -4,8 +4,6 @@ BUILD_DIR = build
 SRC_DIR = how_to
 LIB_HEADER = aids.h argparse.h
 
-all: $(BUILD_DIR)/main
-
 render:
 	./render.sh
 

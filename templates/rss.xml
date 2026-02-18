@@ -6,7 +6,7 @@
         <language>en</language>
         {% for (unsigned int i = 0; i < posts.count; i++) { %}
             {% Post *post = NULL; %}
-            {% aids_array_get(&posts, i, (unsigned char **)&post); %}
+            {% aids_array_get(&posts, i, (void **)&post); %}
             <item>
                 <title>{% write(post->meta.title); %}</title>
                 <link>https://alexjercan.github.io/{% write_id(post->id); %}</link>
