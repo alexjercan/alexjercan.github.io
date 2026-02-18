@@ -99,6 +99,15 @@ typedef struct {
 typedef struct {
 } Markdown_Thematic_Break;
 
+/* MATH EXTENSION */
+typedef struct {
+    Aids_String_Slice value; /* Raw LaTeX content between the $$ fences */
+} Markdown_Math; /* Block-level: $$\n...\n$$ */
+
+typedef struct {
+    Aids_String_Slice value; /* Raw LaTeX content between the $ delimiters */
+} Markdown_Inline_Math; /* Inline: $...$ */
+
 typedef enum {
     MD_BLOCKQUOTE,
     MD_CODE,
@@ -107,6 +116,7 @@ typedef enum {
     MD_THEMATIC_BREAK,
     MD_DEFINITION,
     MD_PARAGRAPH,
+    MD_MATH,
 } Markdown_Flow_Content_Kind;
 
 typedef struct {
@@ -119,6 +129,7 @@ typedef struct {
         Markdown_Thematic_Break thematic_break;
         Markdown_Definition definition;
         Markdown_Paragraph paragraph;
+        Markdown_Math math;
     };
 } Markdown_Flow_Content;
 
@@ -133,6 +144,7 @@ typedef enum {
     MD_LINK_REFERENCE,
     MD_STRONG,
     MD_TEXT,
+    MD_INLINE_MATH,
 } Markdown_Phrasing_Content_Kind;
 
 typedef struct {
@@ -147,6 +159,7 @@ typedef struct {
         Markdown_Link link;
         Markdown_Strong strong;
         Markdown_Text text;
+        Markdown_Inline_Math inline_math;
     };
 } Markdown_Phrasing_Content;
 
@@ -160,7 +173,6 @@ static char markdown_peek(Aids_String_Slice *input) {
     if (input->len == 0) {
         return EOF;
     }
-
     return input->str[0];
 }
 
@@ -168,7 +180,6 @@ static char markdown_peek2(Aids_String_Slice *input) {
     if (input->len <= 1) {
         return EOF;
     }
-
     return input->str[1];
 }
 
@@ -176,7 +187,6 @@ static char markdown_peek3(Aids_String_Slice *input) {
     if (input->len <= 2) {
         return EOF;
     }
-
     return input->str[2];
 }
 
@@ -213,7 +223,35 @@ static boolean markdown_try_parse_inline_code(Aids_String_Slice *input, Markdown
 
     phrasing_content->inline_code.value = content;
     *input = iter;
+    return true;
+}
 
+static boolean markdown_try_parse_inline_math(Aids_String_Slice *input, Markdown_Phrasing_Content *phrasing_content) {
+    phrasing_content->kind = MD_INLINE_MATH;
+
+    Aids_String_Slice iter = *input;
+
+    if (markdown_peek(&iter) != '$' || markdown_peek2(&iter) == '$') {
+        return false;
+    }
+    aids_string_slice_skip(&iter, 1);
+
+    Aids_String_Slice value = aids_string_slice_from_parts(iter.str, 0);
+    while (iter.len > 0) {
+        char ch = markdown_peek(&iter);
+        if (ch == '$') {
+            aids_string_slice_skip(&iter, 1);
+            break;
+        } else if (ch == (char)EOF || ch == '\n') {
+            return false;
+        } else {
+            value.len++;
+            aids_string_slice_skip(&iter, 1);
+        }
+    }
+
+    phrasing_content->inline_math.value = value;
+    *input = iter;
     return true;
 }
 
@@ -285,7 +323,6 @@ static boolean markdown_try_parse_link(Aids_String_Slice *input, Markdown_Phrasi
     }
 
     *input = iter;
-
     return true;
 }
 
@@ -327,7 +364,6 @@ static boolean markdown_try_parse_emphasis(Aids_String_Slice *input, Markdown_Ph
     }
 
     *input = iter;
-
     return true;
 }
 
@@ -371,7 +407,6 @@ static boolean markdown_try_parse_strong(Aids_String_Slice *input, Markdown_Phra
     }
 
     *input = iter;
-
     return true;
 }
 
@@ -400,7 +435,6 @@ static boolean markdown_try_parse_html(Aids_String_Slice *input, Markdown_Phrasi
 
     phrasing_content->html.value = content;
     *input = iter;
-
     return true;
 }
 
@@ -461,9 +495,7 @@ static boolean markdown_try_parse_image(Aids_String_Slice *input, Markdown_Phras
 
     phrasing_content->image.url = url;
     phrasing_content->image.alt = alt;
-
     *input = iter;
-
     return true;
 }
 
@@ -512,9 +544,7 @@ static boolean markdown_try_parse_image_reference(Aids_String_Slice *input, Mark
 
     phrasing_content->image_reference.alt = alt;
     phrasing_content->image_reference.reference = reference;
-
     *input = iter;
-
     return true;
 }
 
@@ -565,6 +595,11 @@ static void markdown_parse_phrasing_content(Aids_String_Slice *input, Markdown_P
             return;
         }
         is_text = true;
+    } else if (ch == '$') {
+        if (markdown_try_parse_inline_math(input, phrasing_content)) {
+            return;
+        }
+        is_text = true;
     }
 
     char failed_special = is_text ? ch : 0;
@@ -575,7 +610,9 @@ static void markdown_parse_phrasing_content(Aids_String_Slice *input, Markdown_P
 
     while (input->len > 0 && markdown_peek(input) != '\n') {
         char c = markdown_peek(input);
-        if (c != failed_special && (c == '[' || c == '*' || c == '_' || c == '`' || c == '<' || c == '!')) {
+        if (c != failed_special && (c == '[' || c == '*' || c == '_' ||
+                                     c == '`' || c == '<' || c == '!' ||
+                                     c == '$')) {
             break;
         }
 
@@ -607,8 +644,6 @@ static boolean markdown_try_parse_code(Aids_String_Slice *input, Markdown_Code *
     aids_string_slice_trim(&lang);
     code->lang = lang;
 
-    // TODO: Parse meta information if needed
-
     aids_string_slice_skip(&iter, 1);
     Aids_String_Slice value = aids_string_slice_from_parts(iter.str, 0);
     while (true) {
@@ -626,7 +661,45 @@ static boolean markdown_try_parse_code(Aids_String_Slice *input, Markdown_Code *
 
     code->value = value;
     *input = iter;
+    return true;
+}
 
+static boolean markdown_try_parse_math(Aids_String_Slice *input, Markdown_Math *math) {
+    Aids_String_Slice iter = *input;
+
+    if (markdown_peek(&iter) != '$' || markdown_peek2(&iter) != '$') {
+        return false;
+    }
+    aids_string_slice_skip(&iter, 2);
+
+    if (markdown_peek(&iter) != '\n') {
+        return false;
+    }
+    aids_string_slice_skip(&iter, 1);
+
+    Aids_String_Slice value = aids_string_slice_from_parts(iter.str, 0);
+    while (true) {
+        char ch = markdown_peek(&iter);
+        if (ch == (char)EOF) {
+            return false;
+        } else if (ch == '$' && markdown_peek2(&iter) == '$') {
+            aids_string_slice_skip(&iter, 2);
+            while (iter.len > 0 && markdown_peek(&iter) != '\n') {
+                aids_string_slice_skip(&iter, 1);
+            }
+            break;
+        } else {
+            value.len++;
+            aids_string_slice_skip(&iter, 1);
+        }
+    }
+
+    if (value.len > 0 && value.str[value.len - 1] == '\n') {
+        value.len--;
+    }
+
+    math->value = value;
+    *input = iter;
     return true;
 }
 
@@ -923,6 +996,13 @@ static void markdown_parse_flow_content(Aids_String_Slice *input, Markdown_Flow_
         } else {
             goto parse_paragraph;
         }
+    } else if (ch == '$') {
+        flow_content->kind = MD_MATH;
+        Markdown_Math *math = &flow_content->math;
+
+        if (!markdown_try_parse_math(input, math)) {
+            goto parse_paragraph;
+        }
     } else if (ch == '[') {
         flow_content->kind = MD_DEFINITION;
         Markdown_Definition *definition = &flow_content->definition;
@@ -961,7 +1041,7 @@ MDHDEF void markdown_parse(Aids_String_Slice input, Markdown_Root *root) {
     while (input.len > 0) {
         aids_string_slice_trim_left(&input);
         if (input.len == 0) {
-            break; // No more content to parse
+            break;
         }
 
         Markdown_Flow_Content flow_content = {0};

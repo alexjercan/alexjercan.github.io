@@ -248,3 +248,30 @@ nav.pagination {
   background-color: #1e1e1e;
   color: #cfcfcf;
 }
+
+/* ---- Math (KaTeX) ---- */
+
+/* Block math: center it and give it breathing room */
+.post-content .math-block {
+  display: block;
+  overflow-x: auto;
+  padding: 1em 0;
+  text-align: center;
+}
+
+/* Inline math: keep it on the baseline */
+.post-content .math-inline {
+  display: inline;
+}
+
+/* KaTeX injects its own colors — override them for the dark theme */
+.post-content .katex {
+  color: #e0e0e0;
+  font-size: 1.1em; /* slightly larger than body text, easier to read */
+}
+
+/* KaTeX renders fractions and other structures with nested spans;
+   make sure nothing inherits the orange em/strong color */
+.post-content .katex * {
+  color: inherit;
+}

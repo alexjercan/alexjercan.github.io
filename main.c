@@ -415,6 +415,11 @@ static void markdown_print_phrasing_content(Aids_String_Builder *sb, const Markd
         case MD_TEXT:
             markdown_print_text(sb, &content->text);
             break;
+        case MD_INLINE_MATH:
+            aids_string_builder_append(sb, "<span class=\"math-inline\">\\(");
+            string_builder_append_html_escaped(sb, content->inline_math.value);
+            aids_string_builder_append(sb, "\\)</span>");
+            break;
         default:
             aids_log(AIDS_ERROR, "Unknown phrasing content kind");
             exit(EXIT_FAILURE);
@@ -514,6 +519,11 @@ static void markdown_print_flow_content(Aids_String_Builder *sb, const Markdown_
             break;
         case MD_PARAGRAPH:
             markdown_print_paragraph(sb, &flow_content->paragraph);
+            break;
+        case MD_MATH:
+            aids_string_builder_append(sb, "<div class=\"math-block\">\\[");
+            string_builder_append_html_escaped(sb, flow_content->math.value);
+            aids_string_builder_append(sb, "\\]</div>");
             break;
         default:
             aids_log(AIDS_ERROR, "Unknown flow content kind");
