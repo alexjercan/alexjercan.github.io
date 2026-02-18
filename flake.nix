@@ -1,45 +1,49 @@
 {
-  description = "A basic flake for my C Projects";
+  description = "C Flake using flake parts";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
-  outputs = {
+  outputs = inputs @ {
     self,
-    nixpkgs,
-    flake-utils,
-  }: (
-    flake-utils.lib.eachDefaultSystem
-    (system: let
-      pkgs = import nixpkgs {
-        inherit system;
+    flake-parts,
+    ...
+  }: flake-parts.lib.mkFlake {inherit inputs;} {
+      imports = [
+        # To import an internal flake module: ./other.nix
+        # To import an external flake module:
+        #   1. Add foo to inputs
+        #   2. Add foo as a parameter to the outputs function
+        #   3. Add here: foo.flakeModule
+      ];
+      systems = ["x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin"];
+      perSystem = {
+        pkgs,
+        system,
+        ...
+      }: {
+        # Per-system attributes can be defined here. The self' and inputs'
+        # module parameters provide easy access to attributes of the same
+        # system.
+        _module.args.pkgs = import self.inputs.nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+          config.cudaSupport.enable = true;
+        };
 
-        config = {
-          allowUnfree = true;
+        devShells.default = pkgs.mkShell {
+          packages = [
+            pkgs.clang
+            pkgs.valgrind
+          ];
         };
       };
-    in {
-      packages = {
-          default = {}; # TODO: Add package here
+      flake = {
+        # The usual flake attributes can be defined here, including system-
+        # agnostic ones like nixosModule and system-enumerating ones, although
+        # those are more easily expressed in perSystem.
       };
-
-      apps = {
-        # TODO: Add app here
-        # default = flake-utils.lib.mkApp {
-        #   drv = ...;
-        # };
-      };
-
-      devShells.default = pkgs.mkShell {
-        nativeBuildInputs = with pkgs; [
-          clang
-          valgrind
-        ];
-
-        buildInputs = [];
-      };
-    })
-  );
+    };
 }
