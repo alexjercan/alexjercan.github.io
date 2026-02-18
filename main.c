@@ -342,10 +342,43 @@ static void markdown_print_children(Aids_String_Builder *sb, const Aids_Array *c
 
 static void markdown_print_phrasing_content(Aids_String_Builder *sb, const Markdown_Phrasing_Content *content) {
     switch (content->kind) {
+        case MD_BREAK:
+            aids_string_builder_append(sb, "<br />");
+            break;
         case MD_EMPHASIS:
             aids_string_builder_append(sb, "<em>");
             markdown_print_children(sb, &content->emphasis.children);
             aids_string_builder_append(sb, "</em>");
+            break;
+        case MD_HTML:
+            aids_string_builder_append(sb, "<%.*s>", (int)content->html.value.len, content->html.value.str);
+            break;
+        case MD_IMAGE:
+            aids_string_builder_append(sb, "<img src=\"");
+            string_builder_append_html_escaped(sb, content->image.url);
+            aids_string_builder_append(sb, "\"");
+            if (content->image.alt.len > 0) {
+                aids_string_builder_append(sb, " alt=\"");
+                string_builder_append_html_escaped(sb, content->image.alt);
+                aids_string_builder_append(sb, "\"");
+            }
+            if (content->image.title.len > 0) {
+                aids_string_builder_append(sb, " title=\"");
+                string_builder_append_html_escaped(sb, content->image.title);
+                aids_string_builder_append(sb, "\"");
+            }
+            aids_string_builder_append(sb, " />");
+            break;
+        case MD_IMAGE_REFERENCE:
+            aids_string_builder_append(sb, "<img src=\"");
+            string_builder_append_html_escaped(sb, content->image_reference.reference);
+            aids_string_builder_append(sb, "\"");
+            if (content->image_reference.alt.len > 0) {
+                aids_string_builder_append(sb, " alt=\"");
+                string_builder_append_html_escaped(sb, content->image_reference.alt);
+                aids_string_builder_append(sb, "\"");
+            }
+            aids_string_builder_append(sb, " />");
             break;
         case MD_INLINE_CODE:
             aids_string_builder_append(sb, "<code>");
@@ -360,10 +393,19 @@ static void markdown_print_phrasing_content(Aids_String_Builder *sb, const Markd
                 string_builder_append_html_escaped(sb, content->link.title);
             }
             aids_string_builder_append(sb, "\">");
-
             markdown_print_children(sb, &content->link.children);
             aids_string_builder_append(sb, "</a>");
-
+            break;
+        case MD_LINK_REFERENCE:
+            aids_string_builder_append(sb, "<a href=\"");
+            string_builder_append_html_escaped(sb, content->image_reference.reference);
+            aids_string_builder_append(sb, "\">");
+            if (content->image_reference.alt.len > 0) {
+                string_builder_append_html_escaped(sb, content->image_reference.alt);
+            } else {
+                string_builder_append_html_escaped(sb, content->image_reference.reference);
+            }
+            aids_string_builder_append(sb, "</a>");
             break;
         case MD_STRONG:
             aids_string_builder_append(sb, "<strong>");
@@ -401,13 +443,74 @@ static void markdown_print_paragraph(Aids_String_Builder *sb, const Markdown_Par
     aids_string_builder_append(sb, "</p>");
 }
 
+static void markdown_print_flow_content(Aids_String_Builder *sb, const Markdown_Flow_Content *flow_content);
+
+static void markdown_print_flow_children(Aids_String_Builder *sb, const Aids_Array *children) {
+    for (size_t i = 0; i < children->count; i++) {
+        Markdown_Flow_Content *fc = NULL;
+        if (aids_array_get(children, i, (void **)&fc) != AIDS_OK) {
+            aids_log(AIDS_ERROR, "Failed to get flow content at index %zu", i);
+            exit(EXIT_FAILURE);
+        }
+        markdown_print_flow_content(sb, fc);
+    }
+}
+
+static void markdown_print_list(Aids_String_Builder *sb, const Markdown_List *list) {
+    const char *tag = list->ordered ? "ol" : "ul";
+
+    aids_string_builder_append(sb, "<%s", tag);
+    if (list->ordered && list->start != 1) {
+        aids_string_builder_append(sb, " start=\"%zu\"", list->start);
+    }
+    aids_string_builder_append(sb, ">");
+
+    for (size_t i = 0; i < list->children.count; i++) {
+        Markdown_List_Item *item = NULL;
+        if (aids_array_get(&list->children, i, (void **)&item) != AIDS_OK) {
+            aids_log(AIDS_ERROR, "Failed to get list item at index %zu", i);
+            exit(EXIT_FAILURE);
+        }
+
+        aids_string_builder_append(sb, "<li>");
+
+        if (!list->spread && item->children.count == 1) {
+            Markdown_Flow_Content *fc = NULL;
+            if (aids_array_get(&item->children, 0, (void **)&fc) == AIDS_OK && fc->kind == MD_PARAGRAPH) {
+                markdown_print_children(sb, &fc->paragraph.children);
+            } else {
+                markdown_print_flow_children(sb, &item->children);
+            }
+        } else {
+            markdown_print_flow_children(sb, &item->children);
+        }
+
+        aids_string_builder_append(sb, "</li>");
+    }
+
+    aids_string_builder_append(sb, "</%s>", tag);
+}
+
 static void markdown_print_flow_content(Aids_String_Builder *sb, const Markdown_Flow_Content *flow_content) {
     switch (flow_content->kind) {
+        case MD_BLOCKQUOTE:
+            aids_string_builder_append(sb, "<blockquote>");
+            markdown_print_flow_children(sb, &flow_content->blockquote.children);
+            aids_string_builder_append(sb, "</blockquote>");
+            break;
         case MD_CODE:
             markdown_print_code(sb, &flow_content->code);
             break;
         case MD_HEADING:
             markdown_print_heading(sb, &flow_content->heading);
+            break;
+        case MD_LIST:
+            markdown_print_list(sb, &flow_content->list);
+            break;
+        case MD_THEMATIC_BREAK:
+            aids_string_builder_append(sb, "<hr />");
+            break;
+        case MD_DEFINITION:
             break;
         case MD_PARAGRAPH:
             markdown_print_paragraph(sb, &flow_content->paragraph);
