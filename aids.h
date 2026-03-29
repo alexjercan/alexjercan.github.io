@@ -1,3 +1,88 @@
+/* Aids - v1.1.0 - Public Domain - github.com/alexjercan/aids.h
+
+    # aids.h
+
+    Header only library for helpers in C projects. This is a continuation of the
+    [ds.h](github.com/alexjercan/ds.h) project.
+    The name means - all in one data structures.
+
+    ## Features
+
+        This library provides the following features:
+        - Logging with file and line information
+        - Temporary memory allocator for short-lived allocations
+        - Doubly linked list
+        - Dynamic array
+        - Hash map with custom hash and compare functions
+        - Priority queue
+        - String slice utilities
+        - String builder
+        - File I/O utilities
+
+    ## Quick Start
+
+        To use the library, simply include the header in your C source files:
+
+        ```c
+        #define AIDS_IMPLEMENTATION
+        #include "aids.h"
+        ```
+
+        Then you can use the provided functions and data structures in your code.
+        For example:
+
+        ```c
+        #include "aids.h"
+
+        int main() {
+            Aids_List list;
+            aids_list_init(&list, sizeof(int));
+
+            int value = 42;
+            aids_list_push_back(&list, &value);
+
+            int popped_value;
+            aids_list_pop_front(&list, &popped_value);
+            printf("Popped value: %d\n", popped_value);
+
+            aids_list_free(&list);
+            return 0;
+        }
+        ```
+
+    ## Flags
+
+        Enable or disable features of the library using the following flags
+        before including the header:
+
+        - `AIDS_NO_TERMINAL_COLORS`: Disable terminal colors in logs.
+
+    ## Macros
+
+        Define the following macros for convenience:
+
+        - `AIDS_UNUSED(x)`: Mark a variable as unused to avoid compiler warnings.
+        - `AIDS_TODO(message)`: Log a TODO message with file and line information and exit.
+        - `AIDS_UNREACHABLE(message)`: Log an UNREACHABLE message with file and
+          line information and exit.
+        - `AIDS_ASSERT(condition, message)`: Assert a condition and log an error
+          message with file and line information if the assertion fails.
+        - `AIDS_PRINTF_FORMAT(STRING_INDEX, FIRST_TO_CHECK)`: Annotate a function to
+          enable printf-style format string checking in supported compilers.
+        - `return_defer(code)`: Set a result code and jump to a defer label for cleanup.
+
+    ## Redefinable Macros
+
+        The following macros can be redefined before including the header to
+        customize the behavior of the library:
+
+        - `AIDSHDEF`: Define the linkage of the library functions (e.g., `static` or `extern`).
+        - `AIDS_REALLOC`: Define the memory allocation function to use for resizing
+          arrays and lists.
+        - `AIDS_FREE`: Define the memory deallocation function to use for freeing memory.
+
+*/
+
 #ifndef AIDS_H
 #define AIDS_H
 
@@ -42,22 +127,22 @@
 #endif
 
 #define AIDS_UNUSED(x) (void)(x)
-#define AIDS_TODO(message)                                                     \
-    do {                                                                       \
-        fprintf(stderr, "%s:%d: TODO: %s\n", __FILE__, __LINE__, message);     \
-        exit(EXIT_FAILURE);                                                    \
+#define AIDS_TODO(fmt, ...)                                                           \
+    do {                                                                              \
+        fprintf(stderr, "%s:%d: TODO: " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__); \
+        exit(EXIT_FAILURE);                                                           \
     } while (0)
-#define AIDS_UNREACHABLE(message)                                                \
-    do {                                                                       \
-        fprintf(stderr, "%s:%d: UNREACHABLE: %s\n", __FILE__, __LINE__, message); \
-        exit(EXIT_FAILURE);                                                    \
+#define AIDS_UNREACHABLE(fmt, ...)                                                           \
+    do {                                                                                     \
+        fprintf(stderr, "%s:%d: UNREACHABLE: " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__); \
+        exit(EXIT_FAILURE);                                                                  \
     } while (0)
-#define AIDS_ASSERT(condition, message)                                         \
-    do {                                                                       \
-        if (!(condition)) {                                                   \
-            fprintf(stderr, "%s:%d: ASSERTION FAILED: %s\n", __FILE__, __LINE__, message); \
-            exit(EXIT_FAILURE);                                               \
-        }                                                                      \
+#define AIDS_ASSERT(condition, fmt, ...)                                                              \
+    do {                                                                                              \
+        if (!(condition)) {                                                                           \
+            fprintf(stderr, "%s:%d: ASSERTION FAILED: " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__); \
+            exit(EXIT_FAILURE);                                                                       \
+        }                                                                                             \
     } while (0)
 
 typedef enum {
@@ -79,6 +164,17 @@ typedef enum {
 #define AIDS_TERMINAL_RESET "\033[0m"
 #endif
 
+// String slice format and argument macros for printf-style functions
+#ifndef SS_Fmt
+#define SS_Fmt "%.*s"
+#endif // SS_Fmt
+#ifndef SS_Arg
+#define SS_Arg(ss) (int)(ss).len, (ss).str
+#endif // SS_Arg
+// Usage:
+//   Aids_String_Slice ss = ...;
+//   printf("String slice: " SS_Fmt "\n", SS_Arg(ss));
+
 void aids_log_msg(Aids_Log_Level level, const char* file, int line, const char *fmt, ...) AIDS_PRINTF_FORMAT(4, 5);
 #define aids_log(level, fmt, ...) aids_log_msg(level, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
 
@@ -96,10 +192,10 @@ typedef enum {
 } Aids_Result;
 
 #ifndef return_defer
-#define return_defer(code)                                                     \
-    do {                                                                       \
-        result = (code);                                                       \
-        goto defer;                                                            \
+#define return_defer(code) \
+    do {                   \
+        result = (code);   \
+        goto defer;        \
     } while (0)
 #endif // return_defer
 
@@ -134,6 +230,7 @@ AIDSHDEF Aids_Result aids_list_pop_front(Aids_List *ll, void *info);
 AIDSHDEF Aids_Result aids_list_pop_back(Aids_List *ll, void *info);
 AIDSHDEF Aids_Result aids_list_peek_front(Aids_List *ll, void **info);
 AIDSHDEF Aids_Result aids_list_peek_back(Aids_List *ll, void **info);
+AIDSHDEF void aids_list_remove_node(Aids_List *ll, Aids_Node *node);
 AIDSHDEF void aids_list_reverse(Aids_List *ll);
 AIDSHDEF void aids_list_free(Aids_List *ll);
 
@@ -157,6 +254,37 @@ AIDSHDEF Aids_Result aids_array_pop(Aids_Array *da, unsigned long index, void *i
 AIDSHDEF Aids_Result aids_array_swap(const Aids_Array *da, unsigned long index1, unsigned long index2);
 AIDSHDEF void aids_array_sort(Aids_Array *da, int (*compare)(const void *, const void *));
 AIDSHDEF void aids_array_free(Aids_Array *da);
+
+#ifndef AIDS_HASH_MAP_BUCKETS
+#define AIDS_HASH_MAP_BUCKETS 128
+#endif // AIDS_HASH_MAP_BUCKETS
+
+typedef struct {
+    void *key;
+    void *value;
+} Aids_Hash_Map_Entry;
+
+typedef struct {
+    Aids_List buckets[AIDS_HASH_MAP_BUCKETS]; /* Aids_Hash_Map_Entry */
+    unsigned long (*hash_func)(const void *);
+    int (*compare_func)(const void *, const void *);
+} Aids_Hash_Map;
+
+AIDSHDEF void aids_hash_map_init(Aids_Hash_Map *hm, unsigned long (*hash_func)(const void *), int (*compare_func)(const void *, const void *));
+AIDSHDEF Aids_Result aids_hash_map_insert(Aids_Hash_Map *hm, const void *key, const void *value);
+AIDSHDEF Aids_Result aids_hash_map_get(const Aids_Hash_Map *hm, const void *key, void **value);
+AIDSHDEF boolean aids_hash_map_contains(const Aids_Hash_Map *hm, const void *key);
+AIDSHDEF Aids_Result aids_hash_map_remove(Aids_Hash_Map *hm, const void *key);
+AIDSHDEF void aids_hash_map_free(Aids_Hash_Map *hm);
+
+typedef struct {
+    const Aids_Hash_Map *hash_map;
+    unsigned long bucket_index;
+    Aids_Node *current_node;
+} Aids_Hash_Map_Iterator;
+
+AIDSHDEF void aids_hash_map_iterator_init(Aids_Hash_Map_Iterator *it, const Aids_Hash_Map *hm);
+AIDSHDEF boolean aids_hash_map_iterator_next(Aids_Hash_Map_Iterator *it, void **key, void **value);
 
 typedef struct {
     Aids_Array items;
@@ -475,6 +603,26 @@ AIDSHDEF void aids_list_reverse(Aids_List *ll) {
     ll->first = aids_node_reverse(current);
 }
 
+AIDSHDEF void aids_list_remove_node(Aids_List *ll, Aids_Node *node) {
+    if (node == NULL) {
+        return;
+    }
+
+    if (node->prev != NULL) {
+        node->prev->next = node->next;
+    } else {
+        ll->first = node->next;
+    }
+
+    if (node->next != NULL) {
+        node->next->prev = node->prev;
+    } else {
+        ll->last = node->prev;
+    }
+
+    aids_node_free(node);
+}
+
 AIDSHDEF void aids_list_free(Aids_List *ll) {
     Aids_Node *current = ll->first;
     while (current != NULL) {
@@ -636,6 +784,153 @@ AIDSHDEF void aids_array_free(Aids_Array *da) {
     da->capacity = 0;
 }
 
+AIDSHDEF void aids_hash_map_init(Aids_Hash_Map *hm, unsigned long (*hash_func)(const void *), int (*compare_func)(const void *, const void *)) {
+    for (size_t i = 0; i < AIDS_HASH_MAP_BUCKETS; i++) {
+        aids_list_init(&hm->buckets[i], sizeof(Aids_Hash_Map_Entry));
+    }
+    hm->hash_func = hash_func;
+    hm->compare_func = compare_func;
+}
+
+AIDSHDEF Aids_Result aids_hash_map_insert(Aids_Hash_Map *hm, const void *key, const void *value) {
+    Aids_Result result = AIDS_OK;
+
+    Aids_Hash_Map_Entry entry = {0};
+    entry.key = (void *)key;
+    entry.value = (void *)value;
+
+    unsigned long hash = hm->hash_func(key);
+    size_t bucket_index = hash % AIDS_HASH_MAP_BUCKETS;
+    Aids_List *bucket = &hm->buckets[bucket_index];
+    Aids_Node *current = bucket->first;
+
+    // Overwrite value if key already exists
+    while (current != NULL) {
+        Aids_Hash_Map_Entry *current_entry = (Aids_Hash_Map_Entry *)current->info;
+        if (hm->compare_func(current_entry->key, key) == 0) {
+            current_entry->value = (void *)value;
+            return_defer(AIDS_OK);
+        }
+        current = current->next;
+    }
+
+    if (aids_list_push_back(bucket, &entry) != AIDS_OK) {
+        return_defer(AIDS_ERR);
+    }
+
+defer:
+    return result;
+}
+
+AIDSHDEF Aids_Result aids_hash_map_get(const Aids_Hash_Map *hm, const void *key, void **value) {
+    Aids_Result result = AIDS_OK;
+
+    unsigned long hash = hm->hash_func(key);
+    size_t bucket_index = hash % AIDS_HASH_MAP_BUCKETS;
+    const Aids_List *bucket = &hm->buckets[bucket_index];
+    Aids_Node *current = bucket->first;
+
+    while (current != NULL) {
+        const Aids_Hash_Map_Entry *current_entry = (const Aids_Hash_Map_Entry *)current->info;
+        if (hm->compare_func(current_entry->key, key) == 0) {
+            *value = current_entry->value;
+            return_defer(AIDS_OK);
+        }
+        current = current->next;
+    }
+
+    aids__g_failure_reason = "Key not found";
+    return_defer(AIDS_ERR);
+
+defer:
+    return result;
+}
+
+AIDSHDEF boolean aids_hash_map_contains(const Aids_Hash_Map *hm, const void *key) {
+    unsigned long hash = hm->hash_func(key);
+    size_t bucket_index = hash % AIDS_HASH_MAP_BUCKETS;
+    const Aids_List *bucket = &hm->buckets[bucket_index];
+    Aids_Node *current = bucket->first;
+
+    while (current != NULL) {
+        const Aids_Hash_Map_Entry *current_entry = (const Aids_Hash_Map_Entry *)current->info;
+        if (hm->compare_func(current_entry->key, key) == 0) {
+            return true;
+        }
+        current = current->next;
+    }
+
+    return false;
+}
+
+AIDSHDEF Aids_Result aids_hash_map_remove(Aids_Hash_Map *hm, const void *key) {
+    Aids_Result result = AIDS_OK;
+
+    unsigned long hash = hm->hash_func(key);
+    size_t bucket_index = hash % AIDS_HASH_MAP_BUCKETS;
+    Aids_List *bucket = &hm->buckets[bucket_index];
+    Aids_Node *current = bucket->first;
+
+    while (current != NULL) {
+        const Aids_Hash_Map_Entry *current_entry = (const Aids_Hash_Map_Entry *)current->info;
+        if (hm->compare_func(current_entry->key, key) == 0) {
+            aids_list_remove_node(bucket, current);
+            return_defer(AIDS_OK);
+        }
+        current = current->next;
+    }
+
+    aids__g_failure_reason = "Key not found";
+    return_defer(AIDS_ERR);
+
+defer:
+    return result;
+}
+
+AIDSHDEF void aids_hash_map_free(Aids_Hash_Map *hm) {
+    for (size_t i = 0; i < AIDS_HASH_MAP_BUCKETS; i++) {
+        aids_list_free(&hm->buckets[i]);
+    }
+}
+
+AIDSHDEF void aids_hash_map_iterator_init(Aids_Hash_Map_Iterator *it, const Aids_Hash_Map *hm) {
+    it->hash_map = hm;
+    it->bucket_index = 0;
+    it->current_node = NULL;
+
+    // Move to the first non-empty bucket
+    while (it->bucket_index < AIDS_HASH_MAP_BUCKETS && it->hash_map->buckets[it->bucket_index].first == NULL) {
+        it->bucket_index++;
+    }
+
+    if (it->bucket_index < AIDS_HASH_MAP_BUCKETS) {
+        it->current_node = it->hash_map->buckets[it->bucket_index].first;
+    }
+}
+
+AIDSHDEF boolean aids_hash_map_iterator_next(Aids_Hash_Map_Iterator *it, void **key, void **value) {
+    if (it->current_node == NULL) {
+        return false;
+    }
+
+    Aids_Hash_Map_Entry *entry = (Aids_Hash_Map_Entry *)it->current_node->info;
+    *key = entry->key;
+    *value = entry->value;
+
+    it->current_node = it->current_node->next;
+
+    // If we reached the end of the current bucket, move to the next non-empty bucket
+    while (it->current_node == NULL) {
+        it->bucket_index++;
+        if (it->bucket_index >= AIDS_HASH_MAP_BUCKETS) {
+            break;
+        }
+        it->current_node = it->hash_map->buckets[it->bucket_index].first;
+    }
+
+    return true;
+}
+
 AIDSHDEF void aids_priority_queue_init(Aids_Priority_Queue *pq, unsigned long item_size, int (*compare)(const void *, const void *)) {
     aids_array_init(&pq->items, item_size);
     pq->compare = compare;
@@ -671,6 +966,10 @@ AIDSHDEF Aids_Result aids_priority_queue_insert(Aids_Priority_Queue *pq, const v
         }
 
         index = parent;
+        if (index == 0) {
+            break;
+        }
+
         parent = (index - 1) / 2;
 
         if (aids_array_get(&pq->items, index, &index_item) != AIDS_OK) {
@@ -998,13 +1297,13 @@ AIDSHDEF Aids_Result aids_io_read(const Aids_String_Slice *filename, Aids_String
 
     if (filename != NULL) {
         size_t temp = aids_temp_save();
-        char *temp_filename = aids_temp_sprintf("%.*s", (int)filename->len, filename->str);
+        char *temp_filename = aids_temp_sprintf(SS_Fmt, SS_Arg(*filename));
         AIDS_ASSERT(temp_filename != NULL, "Failed to create temporary filename");
         file = fopen(temp_filename, mode);
         aids_temp_load(temp);
 
         if (file == NULL) {
-            aids__g_failure_reason = aids_temp_sprintf("Failed to open file '%.*s' for reading", (int)filename->len, filename->str);
+            aids__g_failure_reason = aids_temp_sprintf("Failed to open file '" SS_Fmt "' for reading", SS_Arg(*filename));
             return_defer(AIDS_ERR);
         }
     } else {
@@ -1043,13 +1342,13 @@ AIDSHDEF Aids_Result aids_io_write(const Aids_String_Slice *filename, const Aids
     FILE *file = NULL;
     if (filename != NULL) {
         size_t temp = aids_temp_save();
-        char *temp_filename = aids_temp_sprintf("%.*s", (int)filename->len, filename->str);
+        char *temp_filename = aids_temp_sprintf(SS_Fmt, SS_Arg(*filename));
         AIDS_ASSERT(temp_filename != NULL, "Failed to create temporary filename");
         file = fopen(temp_filename, mode);
         aids_temp_load(temp);
 
         if (file == NULL) {
-            aids__g_failure_reason = aids_temp_sprintf("Failed to open file '%.*s' for writing", (int)filename->len, filename->str);
+            aids__g_failure_reason = aids_temp_sprintf("Failed to open file '" SS_Fmt "' for writing", SS_Arg(*filename));
             return_defer(AIDS_ERR);
         }
     } else {
@@ -1074,12 +1373,12 @@ AIDSHDEF Aids_Result aids_io_list(const Aids_String_Slice *path, Aids_Array *fil
     Aids_Result result = AIDS_OK;
 
     size_t temp = aids_temp_save();
-    char *temp_path = aids_temp_sprintf("%.*s", (int)path->len, path->str);
+    char *temp_path = aids_temp_sprintf(SS_Fmt, SS_Arg(*path));
     DIR * d = opendir(temp_path);
     aids_temp_load(temp);
 
     if(d == NULL) {
-        aids__g_failure_reason = aids_temp_sprintf("Failed to open directory '%.*s'", (int)path->len, path->str);
+        aids__g_failure_reason = aids_temp_sprintf("Failed to open directory '" SS_Fmt "'", SS_Arg(*path));
         return_defer(AIDS_ERR);
     }
 
@@ -1088,7 +1387,7 @@ AIDSHDEF Aids_Result aids_io_list(const Aids_String_Slice *path, Aids_Array *fil
         if(dir->d_type != DT_DIR) {
             Aids_String_Builder sb = {0};
             aids_string_builder_init(&sb);
-            if (aids_string_builder_append(&sb, "%.*s/%s", (int)path->len, path->str, dir->d_name) != AIDS_OK) {
+            if (aids_string_builder_append(&sb, SS_Fmt "/%s", SS_Arg(*path), dir->d_name) != AIDS_OK) {
                 aids__g_failure_reason = "Failed to append to string builder";
                 return_defer(AIDS_ERR);
             }
@@ -1143,6 +1442,17 @@ AIDSHDEF Aids_Result aids_io_basename(const Aids_String_Slice *filepath, Aids_St
 #       define array_sort aids_array_sort
 #       define array_free aids_array_free
 
+#       define Hash_Map Aids_Hash_Map
+#       define hash_map_init aids_hash_map_init
+#       define hash_map_insert aids_hash_map_insert
+#       define hash_map_get aids_hash_map_get
+#       define hash_map_contains aids_hash_map_contains
+#       define hash_map_remove aids_hash_map_remove
+#       define hash_map_free aids_hash_map_free
+#       define Hash_Map_Iterator Aids_Hash_Map_Iterator
+#       define hash_map_iterator_init aids_hash_map_iterator_init
+#       define hash_map_iterator_next aids_hash_map_iterator_next
+
 #       define Priority_Queue Aids_Priority_Queue
 #       define priority_queue_init aids_priority_queue_init
 #       define priority_queue_insert aids_priority_queue_insert
@@ -1182,3 +1492,50 @@ AIDSHDEF Aids_Result aids_io_basename(const Aids_String_Slice *filepath, Aids_St
 
 #   endif // AIDS_STRIP_PREFIX
 #endif // AIDS_STRIP_PREFIX_GUARD_
+
+/*
+    Revision history:
+        1.1.0 (2026-04-30): Add Aids_Hash_Map data structure and related functions
+        1.0.0 (2026-03-29): Initial Release
+*/
+
+/*
+    Version Conventions:
+
+        We are following Semantic Versioning 2.0.0 (https://semver.org/).
+        The version number is in the format MAJOR.MINOR.PATCH, where:
+        - MAJOR version is incremented when we make incompatible API changes.
+        - MINOR version is incremented when we add functionality in a backwards-compatible manner.
+        - PATCH version is incremented when we make backwards-compatible bug fixes.
+
+    API Conventions:
+        - All the user facing functions should be prefixed with `aids_` to avoid naming conflicts.
+        - Internal (private) functions should be prefixed with `aids__` to indicate that they are
+          not part of the public API and should not be used directly by users.
+        - All functions should return an `Aids_Result` to indicate success or failure, and in case
+          of failure, the reason can be retrieved using `aids_failure_reason()`.
+*/
+
+/*
+    MIT License
+
+    Copyright (c) 2025 Alexandru Jercan
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+*/
